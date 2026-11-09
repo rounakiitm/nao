@@ -18,6 +18,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
   const [email, setEmail] = useState(prefillEmail);
   const [passcode, setPasscode] = useState(prefillPasscode);
   const [error, setError] = useState<string | null>(null);
+  const logoSrc = `${import.meta.env.BASE_URL}icon-192.png`;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +55,14 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
           <div className="absolute inset-0 bg-radial from-purple-900/30 via-transparent to-transparent pointer-events-none" />
 
           <div className="w-20 h-20 rounded-2xl overflow-hidden mx-auto shadow-xl shadow-purple-950/60 border border-purple-800/40 relative z-10 bg-[#181424]">
-            <img src="/icon-192.png" alt="nao logo" className="w-full h-full object-cover" />
+            <img 
+              src={logoSrc} 
+              alt="nao logo" 
+              className="w-full h-full object-cover" 
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = './icon-192.png';
+              }}
+            />
           </div>
 
           <div className="relative z-10">
