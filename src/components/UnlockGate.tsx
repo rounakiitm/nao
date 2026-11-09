@@ -159,3 +159,4 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
     </div>
   );
 };
+

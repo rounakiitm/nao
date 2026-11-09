@@ -47,3 +47,4 @@ export const UpdateBanner: React.FC<UpdateBannerProps> = ({ onUpdate, onDismiss 
     </div>
   );
 };
+

@@ -9,6 +9,7 @@ import { SettingsModal } from './components/SettingsModal';
 import { InstallPrompt } from './components/InstallPrompt';
 import { UpdateBanner } from './components/UpdateBanner';
 import { UnlockGate } from './components/UnlockGate';
+import { AIAssistantModal } from './components/AIAssistantModal';
 import { 
   getStoredEvents, 
   addOrUpdateEvent, 
@@ -35,6 +36,9 @@ export const App: React.FC = () => {
   const [editingEvent, setEditingEvent] = useState<ImportantEvent | null>(null);
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
+  // AI Assistant Modal
+  const [aiModalEvent, setAiModalEvent] = useState<ImportantEvent | null>(null);
 
   // Notifications
   const [notifications, setNotifications] = useState<InAppNotification[]>([]);
@@ -91,7 +95,6 @@ export const App: React.FC = () => {
         navigator.serviceWorker
           .register('/sw.js')
           .then((reg) => {
-            // Check if there is already a waiting worker
             if (reg.waiting) {
               setWaitingWorker(reg.waiting);
               setShowUpdateBanner(true);
@@ -114,7 +117,6 @@ export const App: React.FC = () => {
           });
       });
 
-      // Reload when the new service worker activates
       let refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!refreshing) {
@@ -239,6 +241,7 @@ export const App: React.FC = () => {
             onDelete={handleDeleteEvent}
             onOpenAddModal={() => { setEditingEvent(null); setIsEventModalOpen(true); }}
             onSwitchToCalendar={() => setActiveTab('calendar')}
+            onOpenAI={(ev) => setAiModalEvent(ev)}
           />
         )}
 
@@ -248,6 +251,7 @@ export const App: React.FC = () => {
             onEdit={(ev) => { setEditingEvent(ev); setIsEventModalOpen(true); }}
             onDelete={handleDeleteEvent}
             onOpenAddModal={() => { setEditingEvent(null); setIsEventModalOpen(true); }}
+            onOpenAI={(ev) => setAiModalEvent(ev)}
           />
         )}
 
@@ -257,6 +261,7 @@ export const App: React.FC = () => {
             onEdit={(ev) => { setEditingEvent(ev); setIsEventModalOpen(true); }}
             onDelete={handleDeleteEvent}
             onOpenAddModal={() => { setEditingEvent(null); setIsEventModalOpen(true); }}
+            onOpenAI={(ev) => setAiModalEvent(ev)}
           />
         )}
       </main>
@@ -297,6 +302,13 @@ export const App: React.FC = () => {
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         onDataRestored={refreshData}
+      />
+
+      {/* AI Assistant Modal */}
+      <AIAssistantModal
+        isOpen={Boolean(aiModalEvent)}
+        onClose={() => setAiModalEvent(null)}
+        event={aiModalEvent}
       />
 
       {/* PWA Install Banner */}

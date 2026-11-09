@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Plus, Filter, ArrowUpDown } from 'lucide-react';
+import { Search, Plus, ArrowUpDown } from 'lucide-react';
 import { ImportantEvent } from '../types';
 import { EventCard } from './EventCard';
 import { getNextOccurrence } from '../lib/dateUtils';
@@ -9,6 +9,7 @@ interface AllDatesViewProps {
   onEdit: (event: ImportantEvent) => void;
   onDelete: (id: string) => void;
   onOpenAddModal: () => void;
+  onOpenAI?: (event: ImportantEvent) => void;
 }
 
 export const AllDatesView: React.FC<AllDatesViewProps> = ({
@@ -16,6 +17,7 @@ export const AllDatesView: React.FC<AllDatesViewProps> = ({
   onEdit,
   onDelete,
   onOpenAddModal,
+  onOpenAI,
 }) => {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'days' | 'title' | 'category'>('days');
@@ -90,10 +92,15 @@ export const AllDatesView: React.FC<AllDatesViewProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map(({ event }) => (
-          <EventCard key={event.id} event={event} onEdit={onEdit} onDelete={onDelete} />
+          <EventCard 
+            key={event.id} 
+            event={event} 
+            onEdit={onEdit} 
+            onDelete={onDelete} 
+            onOpenAI={onOpenAI}
+          />
         ))}
       </div>
     </div>
   );
 };
-

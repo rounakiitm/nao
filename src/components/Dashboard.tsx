@@ -4,17 +4,13 @@ import {
   Sparkles, 
   Search, 
   Plus, 
-  Filter, 
   Calendar, 
-  Cake, 
-  Heart, 
-  Award, 
   Clock, 
   Lock, 
   Share2,
   CalendarHeart
 } from 'lucide-react';
-import { ImportantEvent, EventCategory } from '../types';
+import { ImportantEvent } from '../types';
 import { EventCard } from './EventCard';
 import { getNextOccurrence } from '../lib/dateUtils';
 
@@ -24,6 +20,7 @@ interface DashboardProps {
   onDelete: (id: string) => void;
   onOpenAddModal: () => void;
   onSwitchToCalendar: () => void;
+  onOpenAI: (event: ImportantEvent) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -32,22 +29,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onDelete,
   onOpenAddModal,
   onSwitchToCalendar,
+  onOpenAI,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'shared' | 'private'>('all');
 
-  // Compute occurrences
   const now = new Date();
   const eventsWithOcc = events.map(ev => ({
     event: ev,
     occ: getNextOccurrence(ev, now)
   }));
 
-  // Today's events
   const todayEvents = eventsWithOcc.filter(item => item.occ.isToday);
 
-  // Trigger celebration confetti if today has events
   useEffect(() => {
     if (todayEvents.length > 0) {
       confetti({
@@ -59,28 +54,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
     }
   }, [todayEvents.length]);
 
-  // Upcoming in next 30 days (excluding today)
   const upcomingNext30 = eventsWithOcc
     .filter(item => !item.occ.isToday && item.occ.daysRemaining > 0 && item.occ.daysRemaining <= 30)
     .sort((a, b) => a.occ.daysRemaining - b.occ.daysRemaining);
 
-  // All upcoming events sorted by days remaining
   const allSorted = [...eventsWithOcc]
     .sort((a, b) => a.occ.daysRemaining - b.occ.daysRemaining);
 
-  // Filtered list
   const filteredEvents = allSorted.filter(({ event }) => {
-    // Search query matching
     const matchesQuery = 
       event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (event.person_name && event.person_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (event.relationship && event.relationship.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (event.notes && event.notes.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    // Category matching
     const matchesCategory = selectedCategory === 'all' || event.category === selectedCategory;
-
-    // Visibility matching
     const matchesVisibility = visibilityFilter === 'all' || event.visibility === visibilityFilter;
 
     return matchesQuery && matchesCategory && matchesVisibility;
@@ -104,7 +92,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </p>
           </div>
 
-          {/* Quick Metrics */}
           <div className="grid grid-cols-3 gap-3 sm:gap-4 bg-white/10 backdrop-blur-md p-3 sm:p-4 rounded-2xl border border-white/15">
             <div className="text-center">
               <span className="block text-2xl font-black">{todayEvents.length}</span>
@@ -121,11 +108,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </div>
 
-        {/* Decorative circle glow */}
         <div className="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
       </div>
 
-      {/* TODAY'S CELEBRATION SECTION (If any) */}
+      {/* TODAY'S CELEBRATION SECTION */}
       {todayEvents.length > 0 && (
         <section className="space-y-3">
           <div className="flex items-center gap-2">
@@ -137,7 +123,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {todayEvents.map(({ event }) => (
-              <EventCard key={event.id} event={event} onEdit={onEdit} onDelete={onDelete} />
+              <EventCard key={event.id} event={event} onEdit={onEdit} onDelete={onDelete} onOpenAI={onOpenAI} />
             ))}
           </div>
         </section>
@@ -164,16 +150,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {upcomingNext30.map(({ event }) => (
-              <EventCard key={event.id} event={event} onEdit={onEdit} onDelete={onDelete} />
+              <EventCard key={event.id} event={event} onEdit={onEdit} onDelete={onDelete} onOpenAI={onOpenAI} />
             ))}
           </div>
         </section>
       )}
 
-      {/* SEARCH AND FILTERS BAR */}
+      {/* SEARCH AND FILTERS */}
       <section className="space-y-4 pt-2">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          {/* Search Bar */}
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
             <input
@@ -185,7 +170,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             />
           </div>
 
-          {/* Visibility toggle buttons */}
           <div className="flex items-center bg-slate-100 p-1 rounded-2xl self-start sm:self-auto">
             <button
               onClick={() => setVisibilityFilter('all')}
@@ -267,7 +251,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredEvents.map(({ event }) => (
-                <EventCard key={event.id} event={event} onEdit={onEdit} onDelete={onDelete} />
+                <EventCard 
+                  key={event.id} 
+                  event={event} 
+                  onEdit={onEdit} 
+                  onDelete={onDelete} 
+                  onOpenAI={onOpenAI}
+                />
               ))}
             </div>
           )}
@@ -276,4 +266,3 @@ export const Dashboard: React.FC<DashboardProps> = ({
     </div>
   );
 };
-

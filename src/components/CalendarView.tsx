@@ -8,6 +8,7 @@ interface CalendarViewProps {
   onEdit: (event: ImportantEvent) => void;
   onDelete: (id: string) => void;
   onOpenAddModal: () => void;
+  onOpenAI?: (event: ImportantEvent) => void;
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = ({
@@ -15,22 +16,22 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   onEdit,
   onDelete,
   onOpenAddModal,
+  onOpenAI,
 }) => {
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [selectedDay, setSelectedDay] = useState<number | null>(() => new Date().getDate());
 
   const year = currentDate.getFullYear();
-  const month = currentDate.getMonth(); // 0 to 11
+  const month = currentDate.getMonth();
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  const firstDayIndex = new Date(year, month, 1).getDay(); // 0 (Sun) to 6 (Sat)
+  const firstDayIndex = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  // Find all events that fall in this month (taking recurring into account)
   const eventsInThisMonth = events.filter((ev) => {
     const parts = ev.date.split('-');
     const evMonth = parseInt(parts[1], 10) - 1;
@@ -42,7 +43,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     return evMonth === month;
   });
 
-  // Group events by day of month
   const eventsByDay: { [day: number]: ImportantEvent[] } = {};
   eventsInThisMonth.forEach((ev) => {
     const parts = ev.date.split('-');
@@ -67,7 +67,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     setSelectedDay(today.getDate());
   };
 
-  // Selected day's events
   const selectedDayEvents = selectedDay && eventsByDay[selectedDay] ? eventsByDay[selectedDay] : [];
 
   const today = new Date();
@@ -136,12 +135,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
         {/* Calendar Grid */}
         <div className="grid grid-cols-7 gap-1 sm:gap-2">
-          {/* Empty cells for preceding month days */}
           {Array.from({ length: firstDayIndex }).map((_, i) => (
             <div key={`empty-${i}`} className="min-h-[50px] sm:min-h-[70px] bg-slate-50/50 rounded-xl border border-transparent" />
           ))}
 
-          {/* Days of the current month */}
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const dayNum = i + 1;
             const dayEvents = eventsByDay[dayNum] || [];
@@ -182,7 +179,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   )}
                 </div>
 
-                {/* Event mini badges / dots */}
                 <div className="mt-1 flex flex-wrap gap-1">
                   {dayEvents.slice(0, 3).map((ev) => {
                     const badge = getCategoryBadge(ev.category);
@@ -238,7 +234,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {selectedDayEvents.map((ev) => (
-                <EventCard key={ev.id} event={ev} onEdit={onEdit} onDelete={onDelete} />
+                <EventCard 
+                  key={ev.id} 
+                  event={ev} 
+                  onEdit={onEdit} 
+                  onDelete={onDelete} 
+                  onOpenAI={onOpenAI}
+                />
               ))}
             </div>
           )
@@ -250,7 +252,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {eventsInThisMonth.map((ev) => (
-                <EventCard key={ev.id} event={ev} onEdit={onEdit} onDelete={onDelete} />
+                <EventCard 
+                  key={ev.id} 
+                  event={ev} 
+                  onEdit={onEdit} 
+                  onDelete={onDelete} 
+                  onOpenAI={onOpenAI}
+                />
               ))}
             </div>
           )
@@ -259,4 +267,3 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     </div>
   );
 };
-
