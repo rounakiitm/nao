@@ -1,0 +1,18 @@
+{
+  "name": "Important Dates",
+  "short_name": "Important Dates",
+  "description": "Private, sacred reminder application for birthdays, anniversaries, and personal milestones.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#026bc7",
+  "icons": [
+    {
+      "src": "/calendar-heart.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
