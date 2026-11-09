@@ -214,10 +214,10 @@ export const Header: React.FC<HeaderProps> = ({
                     </span>
                     <div className="space-y-1">
                       <button
-                        onClick={() => { setShowUserMenu(false); onSwitchUser('owner@example.com'); }}
+                        onClick={() => { setShowUserMenu(false); onSwitchUser('rounaksingh05555@gmail.com'); }}
                         className="w-full text-left p-2 rounded-lg hover:bg-slate-100 flex items-center justify-between text-slate-700 font-medium"
                       >
-                        <span>👑 Owner (owner@example.com)</span>
+                        <span>👑 Rounak (Owner)</span>
                         {currentUser.role === 'owner' && <Check className="w-3.5 h-3.5 text-emerald-600" />}
                       </button>
                       <button

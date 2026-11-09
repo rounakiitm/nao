@@ -36,10 +36,10 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
   };
 
   const handleQuickOwnerUnlock = () => {
-    setName('Owner');
-    setEmail('owner@example.com');
+    setName('Rounak');
+    setEmail('rounaksingh05555@gmail.com');
     setPasscode('FAMILY2026');
-    const res = verifyAndUnlock('owner@example.com', 'FAMILY2026', 'Owner');
+    const res = verifyAndUnlock('rounaksingh05555@gmail.com', 'FAMILY2026', 'Rounak');
     if (res.success && res.auth) {
       onUnlockSuccess(res.auth);
     }
@@ -51,7 +51,6 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
         
         {/* Banner with Authentic 3D Infinity Logo */}
         <div className="bg-[#181424] p-8 text-white text-center space-y-3 relative overflow-hidden">
-          {/* Subtle Ambient Radial Glow */}
           <div className="absolute inset-0 bg-radial from-purple-900/30 via-transparent to-transparent pointer-events-none" />
 
           <div className="w-20 h-20 rounded-2xl overflow-hidden mx-auto shadow-xl shadow-purple-950/60 border border-purple-800/40 relative z-10 bg-[#181424]">
@@ -99,7 +98,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Priya"
+                  placeholder="e.g. Rounak, Priya"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
@@ -116,7 +115,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
                 <input
                   type="email"
                   required
-                  placeholder="e.g. priya.family@gmail.com"
+                  placeholder="e.g. rounaksingh05555@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
@@ -133,14 +132,14 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
                 <input
                   type="password"
                   required
-                  placeholder="Enter passcode from owner"
+                  placeholder="Enter passcode from Rounak"
                   value={passcode}
                   onChange={(e) => setPasscode(e.target.value)}
                   className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-mono tracking-wider"
                 />
               </div>
               <p className="text-[10px] text-slate-400 mt-1">
-                (Default owner passcode is <code className="bg-slate-100 px-1 py-0.5 rounded">FAMILY2026</code>)
+                (Default passcode is <code className="bg-slate-100 px-1 py-0.5 rounded">FAMILY2026</code>)
               </p>
             </div>
 
@@ -161,7 +160,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
               onClick={handleQuickOwnerUnlock}
               className="text-xs text-purple-700 hover:text-purple-900 font-semibold hover:underline"
             >
-              👑 First time on this laptop? Enter as Owner
+              👑 First time on this device? Enter as Rounak (Owner)
             </button>
           </div>
 

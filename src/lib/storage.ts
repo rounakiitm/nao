@@ -10,6 +10,8 @@ const STORAGE_KEYS = {
   NOTIFICATIONS: 'important_dates_notifications',
 };
 
+const OWNER_EMAIL = 'rounaksingh05555@gmail.com';
+const OWNER_NAME = 'Rounak';
 const DEFAULT_MASTER_PASSCODE = 'FAMILY2026';
 
 const INITIAL_EVENTS: ImportantEvent[] = [
@@ -25,7 +27,7 @@ const INITIAL_EVENTS: ImportantEvent[] = [
     relationship: 'Family',
     notes: 'Likes yellow roses, send flowers in advance!',
     reminder_offsets: [7, 1, 0],
-    created_by: 'owner@example.com',
+    created_by: OWNER_EMAIL,
     created_at: new Date().toISOString(),
   },
   {
@@ -40,7 +42,7 @@ const INITIAL_EVENTS: ImportantEvent[] = [
     relationship: 'Family',
     notes: 'Book a nice dinner table.',
     reminder_offsets: [7, 3, 1, 0],
-    created_by: 'owner@example.com',
+    created_by: OWNER_EMAIL,
     created_at: new Date().toISOString(),
   },
   {
@@ -55,21 +57,21 @@ const INITIAL_EVENTS: ImportantEvent[] = [
     relationship: 'Family',
     notes: 'Light a lamp and offer prayers in morning.',
     reminder_offsets: [1, 0],
-    created_by: 'owner@example.com',
+    created_by: OWNER_EMAIL,
     created_at: new Date().toISOString(),
   },
   {
     id: 'evt-4',
-    title: 'Career Milestone',
+    title: 'Personal Career Milestone',
     category: 'Milestone',
     date: '2023-01-15',
     year_known: true,
     recurrence: 'yearly',
     visibility: 'private', // OWNER ONLY
     relationship: 'Self',
-    notes: 'Personal career anniversary.',
+    notes: 'Personal milestone reflection.',
     reminder_offsets: [0],
-    created_by: 'owner@example.com',
+    created_by: OWNER_EMAIL,
     created_at: new Date().toISOString(),
   },
   {
@@ -84,7 +86,7 @@ const INITIAL_EVENTS: ImportantEvent[] = [
     relationship: 'Close Friend',
     notes: 'Born on Feb 29 leap day! Observed on Feb 28 on regular years.',
     reminder_offsets: [1, 0],
-    created_by: 'owner@example.com',
+    created_by: OWNER_EMAIL,
     created_at: new Date().toISOString(),
   }
 ];
@@ -92,8 +94,8 @@ const INITIAL_EVENTS: ImportantEvent[] = [
 const INITIAL_MEMBERS: Member[] = [
   {
     id: 'mem-1',
-    name: 'You (Owner)',
-    email: 'owner@example.com',
+    name: OWNER_NAME,
+    email: OWNER_EMAIL,
     role: 'owner',
     status: 'active',
     invited_at: '2026-01-01T00:00:00.000Z',
@@ -128,7 +130,15 @@ export function getVaultAuth(): VaultAuthState | null {
   if (!data) return null;
   try {
     const parsed = JSON.parse(data);
-    if (parsed && parsed.isUnlocked) return parsed;
+    if (parsed && parsed.isUnlocked) {
+      // If user was previously saved as generic owner, update to Rounak
+      if (parsed.userEmail === 'owner@example.com') {
+        parsed.userEmail = OWNER_EMAIL;
+        parsed.userName = OWNER_NAME;
+        saveVaultAuth(parsed);
+      }
+      return parsed;
+    }
     return null;
   } catch {
     return null;
@@ -153,23 +163,21 @@ export function verifyAndUnlock(
   const cleanCode = passcode.trim();
 
   if (cleanCode !== masterCode) {
-    return { success: false, error: 'Incorrect Family Passcode. Please check with the owner.' };
+    return { success: false, error: 'Incorrect Family Passcode. Please check with Rounak.' };
   }
 
-  // Check role
+  // Check role: Rounak is always Owner
+  const isOwner = cleanEmail === OWNER_EMAIL.toLowerCase() || cleanEmail === 'owner@example.com';
+  const role: 'owner' | 'member' = isOwner ? 'owner' : 'member';
+
   const members = getStoredMembers();
   const existing = members.find(m => m.email.toLowerCase() === cleanEmail);
-
-  let role: 'owner' | 'member' = 'member';
-  if (cleanEmail === 'owner@example.com' || (existing && existing.role === 'owner') || members.length <= 1) {
-    role = 'owner';
-  }
 
   // Add to members if not present
   if (!existing) {
     const newMember: Member = {
       id: `mem-${Date.now()}`,
-      name: name?.trim() || cleanEmail.split('@')[0],
+      name: name?.trim() || (isOwner ? OWNER_NAME : cleanEmail.split('@')[0]),
       email: cleanEmail,
       role,
       status: 'active',
@@ -184,7 +192,7 @@ export function verifyAndUnlock(
   const authState: VaultAuthState = {
     isUnlocked: true,
     userEmail: cleanEmail,
-    userName: name?.trim() || existing?.name || cleanEmail.split('@')[0],
+    userName: name?.trim() || (isOwner ? OWNER_NAME : existing?.name || cleanEmail.split('@')[0]),
     role,
     vaultPasscode: masterCode,
   };
@@ -239,7 +247,13 @@ export function getStoredMembers(): Member[] {
     return INITIAL_MEMBERS;
   }
   try {
-    return JSON.parse(data);
+    const list: Member[] = JSON.parse(data);
+    // Ensure Rounak is listed as owner
+    if (!list.some(m => m.email.toLowerCase() === OWNER_EMAIL.toLowerCase())) {
+      list.unshift(INITIAL_MEMBERS[0]);
+      saveMembers(list);
+    }
+    return list;
   } catch {
     return INITIAL_MEMBERS;
   }
@@ -292,8 +306,9 @@ export function generateOneClickInviteLink(email?: string): string {
 
 export function exportBackupJSON(): string {
   const data = {
-    app: 'Important Dates',
+    app: 'nao',
     version: '1.0.0',
+    owner: { name: OWNER_NAME, email: OWNER_EMAIL },
     master_passcode: getMasterPasscode(),
     exported_at: new Date().toISOString(),
     events: getStoredEvents(),
