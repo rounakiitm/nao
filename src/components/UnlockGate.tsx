@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CalendarHeart, Lock, KeyRound, Mail, User, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Lock, KeyRound, Mail, User, ShieldCheck, ArrowRight } from 'lucide-react';
 import { verifyAndUnlock } from '../lib/storage';
 import { VaultAuthState } from '../types';
 
@@ -48,14 +48,18 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
     <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
         
-        {/* Banner */}
-        <div className="bg-gradient-to-tr from-brand-700 to-rose-600 p-8 text-white text-center space-y-3">
-          <div className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center mx-auto shadow-inner text-white">
-            <CalendarHeart className="w-8 h-8" />
+        {/* Banner with Authentic 3D Infinity Logo */}
+        <div className="bg-[#181424] p-8 text-white text-center space-y-3 relative overflow-hidden">
+          {/* Subtle Ambient Radial Glow */}
+          <div className="absolute inset-0 bg-radial from-purple-900/30 via-transparent to-transparent pointer-events-none" />
+
+          <div className="w-20 h-20 rounded-2xl overflow-hidden mx-auto shadow-xl shadow-purple-950/60 border border-purple-800/40 relative z-10 bg-[#181424]">
+            <img src="/icon-192.png" alt="nao logo" className="w-full h-full object-cover" />
           </div>
-          <div>
-            <h1 className="text-3xl font-black tracking-tight">nao</h1>
-            <p className="text-xs text-brand-100 mt-1">Sacred Personal Milestone Vault</p>
+
+          <div className="relative z-10">
+            <h1 className="text-3xl font-black tracking-tight text-white">nao</h1>
+            <p className="text-xs text-amber-200/80 mt-1">Sacred Personal Milestone Vault</p>
           </div>
         </div>
 
@@ -90,7 +94,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
                   placeholder="e.g. Priya"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
                 />
               </div>
             </div>
@@ -107,7 +111,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
                   placeholder="e.g. priya.family@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
                 />
               </div>
             </div>
@@ -124,7 +128,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
                   placeholder="Enter passcode from owner"
                   value={passcode}
                   onChange={(e) => setPasscode(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 outline-none font-mono tracking-wider"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-mono tracking-wider"
                 />
               </div>
               <p className="text-[10px] text-slate-400 mt-1">
@@ -134,9 +138,9 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
 
             <button
               type="submit"
-              className="w-full py-3 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white rounded-xl text-xs font-bold shadow-md shadow-brand-500/20 transition-all flex items-center justify-center gap-2 mt-4"
+              className="w-full py-3 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white rounded-xl text-xs font-bold shadow-md shadow-purple-950/20 transition-all flex items-center justify-center gap-2 mt-4"
             >
-              <ShieldCheck className="w-4 h-4" />
+              <ShieldCheck className="w-4 h-4 text-amber-400" />
               <span>Unlock & Open nao</span>
               <ArrowRight className="w-4 h-4" />
             </button>
@@ -147,7 +151,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
             <button
               type="button"
               onClick={handleQuickOwnerUnlock}
-              className="text-xs text-brand-600 hover:text-brand-800 font-medium hover:underline"
+              className="text-xs text-purple-700 hover:text-purple-900 font-semibold hover:underline"
             >
               👑 First time on this laptop? Enter as Owner
             </button>

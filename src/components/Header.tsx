@@ -46,8 +46,8 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-between h-16">
           {/* Logo & Title */}
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
-            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-slate-900/20 border border-slate-800 bg-[#181824] flex items-center justify-center">
-              <img src="/nao-infinity.svg" alt="nao logo" className="w-full h-full object-cover p-0.5" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-purple-950/20 border border-purple-900/30 bg-[#181424] flex items-center justify-center">
+              <img src="/icon-192.png" alt="nao logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <div className="flex items-center gap-2">
