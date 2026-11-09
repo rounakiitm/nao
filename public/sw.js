@@ -1,24 +1,24 @@
-// Increment this version whenever you release an update or new feature
-const APP_VERSION = 'v1.0.1';
-const CACHE_NAME = `important-dates-cache-${APP_VERSION}`;
+// nao Service Worker - Offline Caching & Push Notifications
+const APP_VERSION = 'v1.0.3';
+const CACHE_NAME = `nao-cache-${APP_VERSION}`;
 
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/calendar-heart.svg'
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './favicon.png',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
-  // Cache app shell
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS_TO_CACHE);
-    })
+    }).then(() => self.skipWaiting())
   );
 });
 
-// Skip waiting if requested from client
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
@@ -26,7 +26,6 @@ self.addEventListener('message', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  // Purge outdated caches from old versions
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -41,7 +40,6 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  // Stale-while-revalidate strategy: serve fast from cache, update cache in background
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request)
@@ -64,11 +62,11 @@ self.addEventListener('fetch', (event) => {
 // Handle Push Notifications
 self.addEventListener('push', (event) => {
   let data = {
-    title: 'Important Date Reminder',
+    title: 'nao - Milestone Reminder',
     body: 'You have an upcoming event today!',
-    icon: '/calendar-heart.svg',
-    badge: '/calendar-heart.svg',
-    url: '/'
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    url: './'
   };
 
   if (event.data) {
@@ -82,11 +80,11 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
-    icon: data.icon || '/calendar-heart.svg',
-    badge: data.badge || '/calendar-heart.svg',
+    icon: data.icon || './icon-192.png',
+    badge: data.badge || './icon-192.png',
     vibrate: [100, 50, 100],
     data: {
-      url: data.url || '/'
+      url: data.url || './'
     }
   };
 
@@ -97,7 +95,7 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const urlToOpen = (event.notification.data && event.notification.data.url) || '/';
+  const urlToOpen = (event.notification.data && event.notification.data.url) || './';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
