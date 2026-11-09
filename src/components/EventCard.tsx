@@ -13,7 +13,8 @@ import {
   Pencil, 
   Trash2,
   Copy,
-  Check
+  Check,
+  MessageCircle
 } from 'lucide-react';
 import { ImportantEvent, EventCategory } from '../types';
 import { getNextOccurrence, getMilestoneLabel, formatDisplayDate } from '../lib/dateUtils';
@@ -22,6 +23,7 @@ interface EventCardProps {
   event: ImportantEvent;
   onEdit: (event: ImportantEvent) => void;
   onDelete: (id: string) => void;
+  canEdit?: boolean;
 }
 
 export const getCategoryBadge = (category: EventCategory) => {
@@ -72,7 +74,7 @@ export const getCategoryBadge = (category: EventCategory) => {
   }
 };
 
-export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete }) => {
+export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, canEdit = true }) => {
   const [showMenu, setShowMenu] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
 
@@ -80,6 +82,16 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete })
   const milestone = getMilestoneLabel(event, occ.yearsCount);
   const catInfo = getCategoryBadge(event.category);
   const IconComponent = catInfo.icon;
+
+  const getGreetingMessage = () => {
+    if (event.category === 'Birthday') {
+      return `Happy Birthday ${event.person_name || event.title}! Wishing you great joy, health, and a wonderful year ahead! 🎉🎂`;
+    }
+    if (event.category === 'Anniversary') {
+      return `Happy Anniversary ${event.person_name || event.title}! Wishing you many more years of togetherness and happiness! 💍🥂`;
+    }
+    return `Thinking of ${event.title} today with warmest thoughts and fondest memories. ❤️`;
+  };
 
   const handleCopyText = () => {
     const text = `${event.title} is on ${occ.nextDate.toLocaleDateString(undefined, {
@@ -89,6 +101,12 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete })
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+    setShowMenu(false);
+  };
+
+  const handleWhatsAppShare = () => {
+    const msg = encodeURIComponent(getGreetingMessage());
+    window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
     setShowMenu(false);
   };
 
@@ -140,26 +158,38 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete })
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 mt-1 w-36 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-20 text-xs">
+            <div className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-20 text-xs">
               <button
-                onClick={() => { setShowMenu(false); onEdit(event); }}
-                className="w-full text-left px-3 py-2 text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                onClick={handleWhatsAppShare}
+                className="w-full text-left px-3 py-2 text-emerald-700 hover:bg-emerald-50 flex items-center gap-2"
               >
-                <Pencil className="w-3.5 h-3.5" /> Edit
+                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" /> Wish on WhatsApp
               </button>
+              
               <button
                 onClick={handleCopyText}
                 className="w-full text-left px-3 py-2 text-slate-700 hover:bg-slate-50 flex items-center gap-2"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied ? 'Copied!' : 'Copy info'}
+                {copied ? 'Copied!' : 'Copy reminder text'}
               </button>
-              <button
-                onClick={() => { setShowMenu(false); onDelete(event.id); }}
-                className="w-full text-left px-3 py-2 text-rose-600 hover:bg-rose-50 flex items-center gap-2 border-t border-slate-100"
-              >
-                <Trash2 className="w-3.5 h-3.5" /> Delete
-              </button>
+
+              {canEdit && (
+                <>
+                  <button
+                    onClick={() => { setShowMenu(false); onEdit(event); }}
+                    className="w-full text-left px-3 py-2 text-slate-700 hover:bg-slate-50 flex items-center gap-2 border-t border-slate-100"
+                  >
+                    <Pencil className="w-3.5 h-3.5" /> Edit
+                  </button>
+                  <button
+                    onClick={() => { setShowMenu(false); onDelete(event.id); }}
+                    className="w-full text-left px-3 py-2 text-rose-600 hover:bg-rose-50 flex items-center gap-2 border-t border-slate-100"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Delete
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>

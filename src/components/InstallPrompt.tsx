@@ -44,3 +44,4 @@ export const InstallPrompt: React.FC<InstallPromptProps> = ({ onInstall, onDismi
     </div>
   );
 };
+

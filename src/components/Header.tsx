@@ -1,6 +1,19 @@
 import React, { useState } from 'react';
-import { CalendarHeart, Users, Settings, Plus, Download, Bell, Sparkles } from 'lucide-react';
-import { InAppNotification } from '../types';
+import { 
+  CalendarHeart, 
+  Users, 
+  Settings, 
+  Plus, 
+  Download, 
+  Bell, 
+  Sparkles, 
+  User, 
+  ChevronDown, 
+  Check, 
+  ShieldAlert,
+  LogOut 
+} from 'lucide-react';
+import { InAppNotification, CurrentUser } from '../types';
 
 interface HeaderProps {
   activeTab: 'dashboard' | 'calendar' | 'all';
@@ -11,6 +24,8 @@ interface HeaderProps {
   notifications: InAppNotification[];
   canInstall: boolean;
   onInstallApp: () => void;
+  currentUser: CurrentUser;
+  onSwitchUser: (email: string) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -22,9 +37,11 @@ export const Header: React.FC<HeaderProps> = ({
   notifications,
   canInstall,
   onInstallApp,
+  currentUser,
+  onSwitchUser,
 }) => {
   const [showNotifMenu, setShowNotifMenu] = useState(false);
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   return (
     <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200">
@@ -38,7 +55,9 @@ export const Header: React.FC<HeaderProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-tight">Important Dates</h1>
-                <span className="text-[10px] uppercase font-semibold tracking-wider px-1.5 py-0.5 bg-brand-50 text-brand-700 rounded border border-brand-200">Private</span>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 bg-brand-50 text-brand-700 rounded border border-brand-200">
+                  {currentUser.role === 'owner' ? '👑 Owner' : '👤 Member'}
+                </span>
               </div>
               <p className="text-xs text-slate-500 hidden sm:block">Dedicated personal memory & reminder vault</p>
             </div>
@@ -78,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </nav>
 
-          {/* Actions */}
+          {/* Actions & User State */}
           <div className="flex items-center space-x-2">
             {canInstall && (
               <button
@@ -141,14 +160,16 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
 
-            {/* Access Control Button */}
-            <button
-              onClick={onOpenAccessModal}
-              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-              title="Access & Invited Members"
-            >
-              <Users className="w-5 h-5" />
-            </button>
+            {/* Access Control Button (Visible to Owner) */}
+            {currentUser.role === 'owner' && (
+              <button
+                onClick={onOpenAccessModal}
+                className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                title="Manage Access & Invitations"
+              >
+                <Users className="w-5 h-5" />
+              </button>
+            )}
 
             {/* Settings Button */}
             <button
@@ -159,7 +180,63 @@ export const Header: React.FC<HeaderProps> = ({
               <Settings className="w-5 h-5" />
             </button>
 
-            {/* Add Date Button */}
+            {/* User Profile / Account Switcher */}
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-1.5 p-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors"
+              >
+                <div className="w-6 h-6 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-[11px]">
+                  {currentUser.email[0].toUpperCase()}
+                </div>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              </button>
+
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 p-3 z-50 text-xs space-y-2">
+                  <div className="p-2 bg-slate-50 rounded-xl">
+                    <span className="block text-[11px] text-slate-400">Current Account</span>
+                    <span className="font-bold text-slate-800 truncate block">{currentUser.email}</span>
+                    <span className="text-[10px] font-semibold text-brand-600">
+                      {currentUser.role === 'owner' ? '👑 Owner (All privileges)' : '👤 Invited Member (Shared view)'}
+                    </span>
+                  </div>
+
+                  <div className="pt-1">
+                    <span className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                      Switch Role (Blueprint Demo):
+                    </span>
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => { setShowUserMenu(false); onSwitchUser('owner@example.com'); }}
+                        className="w-full text-left p-2 rounded-lg hover:bg-slate-100 flex items-center justify-between text-slate-700 font-medium"
+                      >
+                        <span>👑 Owner (owner@example.com)</span>
+                        {currentUser.role === 'owner' && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                      </button>
+                      <button
+                        onClick={() => { setShowUserMenu(false); onSwitchUser('priya.family@gmail.com'); }}
+                        className="w-full text-left p-2 rounded-lg hover:bg-slate-100 flex items-center justify-between text-slate-700 font-medium"
+                      >
+                        <span>👤 Invited Member (priya.family@...)</span>
+                        {currentUser.role === 'member' && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                      </button>
+                      <button
+                        onClick={() => { setShowUserMenu(false); onSwitchUser('uninvited.person@gmail.com'); }}
+                        className="w-full text-left p-2 rounded-lg hover:bg-rose-50 flex items-center justify-between text-rose-600 font-medium"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <ShieldAlert className="w-3.5 h-3.5" />
+                          Test Uninvited Access
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Add Date Button (Only Owner or authorized members) */}
             <button
               onClick={onOpenAddModal}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 active:bg-brand-800 rounded-xl shadow-sm transition-all"
@@ -171,7 +248,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Mobile Bottom-Like Sub-nav */}
+      {/* Mobile Sub-nav */}
       <div className="md:hidden flex border-t border-slate-200 bg-slate-50 px-2 py-1.5 justify-around">
         <button
           onClick={() => setActiveTab('dashboard')}

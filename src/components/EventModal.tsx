@@ -337,3 +337,4 @@ export const EventModal: React.FC<EventModalProps> = ({
     </div>
   );
 };
+

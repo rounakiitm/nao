@@ -7,6 +7,8 @@ import { EventModal } from './components/EventModal';
 import { ManageAccessModal } from './components/ManageAccessModal';
 import { SettingsModal } from './components/SettingsModal';
 import { InstallPrompt } from './components/InstallPrompt';
+import { UpdateBanner } from './components/UpdateBanner';
+import { UnlockGate } from './components/UnlockGate';
 import { 
   getStoredEvents, 
   addOrUpdateEvent, 
@@ -14,11 +16,16 @@ import {
   getStoredMembers, 
   inviteMember, 
   revokeMember,
-  calculateDueNotifications 
+  calculateDueNotifications,
+  getVaultAuth,
+  saveVaultAuth,
+  verifyAndUnlock,
+  getMasterPasscode
 } from './lib/storage';
-import { ImportantEvent, Member, InAppNotification } from './types';
+import { ImportantEvent, Member, InAppNotification, VaultAuthState } from './types';
 
 export const App: React.FC = () => {
+  const [authState, setAuthState] = useState<VaultAuthState | null>(() => getVaultAuth());
   const [events, setEvents] = useState<ImportantEvent[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'calendar' | 'all'>('dashboard');
@@ -36,6 +43,37 @@ export const App: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 
+  // PWA Update notification
+  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
+  const [showUpdateBanner, setShowUpdateBanner] = useState(false);
+
+  // URL Invite params
+  const [urlInvitePasscode, setUrlInvitePasscode] = useState<string>('');
+  const [urlInviteEmail, setUrlInviteEmail] = useState<string>('');
+
+  // Check URL parameters for 1-click invitation
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const inviteParam = params.get('invite');
+    const emailParam = params.get('email');
+
+    if (inviteParam) {
+      setUrlInvitePasscode(inviteParam);
+      if (emailParam) setUrlInviteEmail(emailParam);
+
+      // Auto verify if passcode matches
+      const masterCode = getMasterPasscode();
+      if (inviteParam.trim() === masterCode) {
+        const targetEmail = emailParam ? emailParam.trim() : 'family.member@gmail.com';
+        const res = verifyAndUnlock(targetEmail, inviteParam, emailParam ? emailParam.split('@')[0] : 'Family Member');
+        if (res.success && res.auth) {
+          setAuthState(res.auth);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    }
+  }, []);
+
   // Load initial data
   const refreshData = () => {
     const loadedEvents = getStoredEvents();
@@ -47,21 +85,46 @@ export const App: React.FC = () => {
   useEffect(() => {
     refreshData();
 
-    // Register service worker if supported
+    // Register service worker and listen for updates
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker
           .register('/sw.js')
           .then((reg) => {
-            console.log('ServiceWorker registered with scope:', reg.scope);
+            // Check if there is already a waiting worker
+            if (reg.waiting) {
+              setWaitingWorker(reg.waiting);
+              setShowUpdateBanner(true);
+            }
+
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    setWaitingWorker(newWorker);
+                    setShowUpdateBanner(true);
+                  }
+                });
+              }
+            });
           })
           .catch((err) => {
-            console.log('ServiceWorker registration failed:', err);
+            console.log('ServiceWorker registration error:', err);
           });
+      });
+
+      // Reload when the new service worker activates
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
       });
     }
 
-    // Listen for PWA install prompt
+    // PWA install listener
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -74,6 +137,15 @@ export const App: React.FC = () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
     };
   }, []);
+
+  const handleApplyUpdate = () => {
+    if (waitingWorker) {
+      waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+    } else {
+      window.location.reload();
+    }
+    setShowUpdateBanner(false);
+  };
 
   const handleInstallApp = async () => {
     if (!deferredPrompt) return;
@@ -99,8 +171,8 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleInvite = (email: string) => {
-    const updated = inviteMember(email);
+  const handleInvite = (email: string, name?: string) => {
+    const updated = inviteMember(email, name);
     setMembers(updated);
   };
 
@@ -109,15 +181,34 @@ export const App: React.FC = () => {
     setMembers(updated);
   };
 
-  const handleOpenAdd = () => {
-    setEditingEvent(null);
-    setIsEventModalOpen(true);
+  const handleSwitchUser = (email: string) => {
+    const masterCode = getMasterPasscode();
+    const res = verifyAndUnlock(email, masterCode);
+    if (res.success && res.auth) {
+      setAuthState(res.auth);
+    }
   };
 
-  const handleOpenEdit = (event: ImportantEvent) => {
-    setEditingEvent(event);
-    setIsEventModalOpen(true);
+  const handleSignOut = () => {
+    saveVaultAuth(null);
+    setAuthState(null);
   };
+
+  // If app is locked on this device, show UnlockGate
+  if (!authState || !authState.isUnlocked) {
+    return (
+      <UnlockGate
+        onUnlockSuccess={(auth) => setAuthState(auth)}
+        prefillEmail={urlInviteEmail}
+        prefillPasscode={urlInvitePasscode}
+      />
+    );
+  }
+
+  // Filter events: Invited members see ONLY "shared" events. Owner sees both "shared" and "private".
+  const visibleEvents = authState.role === 'owner' 
+    ? events 
+    : events.filter(e => e.visibility === 'shared');
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -125,48 +216,62 @@ export const App: React.FC = () => {
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onOpenAddModal={handleOpenAdd}
+        onOpenAddModal={() => { setEditingEvent(null); setIsEventModalOpen(true); }}
         onOpenAccessModal={() => setIsAccessModalOpen(true)}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
         notifications={notifications}
         canInstall={Boolean(deferredPrompt)}
         onInstallApp={handleInstallApp}
+        currentUser={{
+          email: authState.userEmail,
+          role: authState.role,
+          display_name: authState.userName,
+        }}
+        onSwitchUser={handleSwitchUser}
       />
 
       {/* Main Container */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {activeTab === 'dashboard' && (
           <Dashboard
-            events={events}
-            onEdit={handleOpenEdit}
+            events={visibleEvents}
+            onEdit={(ev) => { setEditingEvent(ev); setIsEventModalOpen(true); }}
             onDelete={handleDeleteEvent}
-            onOpenAddModal={handleOpenAdd}
+            onOpenAddModal={() => { setEditingEvent(null); setIsEventModalOpen(true); }}
             onSwitchToCalendar={() => setActiveTab('calendar')}
           />
         )}
 
         {activeTab === 'calendar' && (
           <CalendarView
-            events={events}
-            onEdit={handleOpenEdit}
+            events={visibleEvents}
+            onEdit={(ev) => { setEditingEvent(ev); setIsEventModalOpen(true); }}
             onDelete={handleDeleteEvent}
-            onOpenAddModal={handleOpenAdd}
+            onOpenAddModal={() => { setEditingEvent(null); setIsEventModalOpen(true); }}
           />
         )}
 
         {activeTab === 'all' && (
           <AllDatesView
-            events={events}
-            onEdit={handleOpenEdit}
+            events={visibleEvents}
+            onEdit={(ev) => { setEditingEvent(ev); setIsEventModalOpen(true); }}
             onDelete={handleDeleteEvent}
-            onOpenAddModal={handleOpenAdd}
+            onOpenAddModal={() => { setEditingEvent(null); setIsEventModalOpen(true); }}
           />
         )}
       </main>
 
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white py-6 mt-12 text-center text-xs text-slate-400">
-        <p>Important Dates • Private Personal Milestones Application • Free & Installable</p>
+        <div className="flex items-center justify-center gap-4">
+          <span>Important Dates • Private Vault • Lifelong & Offline</span>
+          <button
+            onClick={handleSignOut}
+            className="text-slate-500 hover:text-rose-600 underline font-medium"
+          >
+            Lock Vault / Sign Out
+          </button>
+        </div>
       </footer>
 
       {/* Modals */}
@@ -199,6 +304,14 @@ export const App: React.FC = () => {
         <InstallPrompt
           onInstall={handleInstallApp}
           onDismiss={() => setShowInstallPrompt(false)}
+        />
+      )}
+
+      {/* Instant Update Available Banner */}
+      {showUpdateBanner && (
+        <UpdateBanner
+          onUpdate={handleApplyUpdate}
+          onDismiss={() => setShowUpdateBanner(false)}
         />
       )}
     </div>

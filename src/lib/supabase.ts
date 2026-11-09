@@ -152,3 +152,4 @@ CREATE POLICY "Manage events policy" ON public.events
     OR auth.uid() = created_by
   );
 `;
+

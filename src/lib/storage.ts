@@ -1,15 +1,17 @@
-import { ImportantEvent, Member, InAppNotification } from '../types';
+import { ImportantEvent, Member, VaultAuthState, InAppNotification } from '../types';
 import { getNextOccurrence } from './dateUtils';
 
 const STORAGE_KEYS = {
   EVENTS: 'important_dates_events',
   MEMBERS: 'important_dates_members',
-  CURRENT_USER: 'important_dates_user',
+  VAULT_AUTH: 'important_dates_vault_auth',
+  MASTER_PASSCODE: 'important_dates_master_passcode',
   SETTINGS: 'important_dates_settings',
   NOTIFICATIONS: 'important_dates_notifications',
 };
 
-// Initial starter seed data to make the app immediately rich and intuitive
+const DEFAULT_MASTER_PASSCODE = 'FAMILY2026';
+
 const INITIAL_EVENTS: ImportantEvent[] = [
   {
     id: 'evt-1',
@@ -23,6 +25,7 @@ const INITIAL_EVENTS: ImportantEvent[] = [
     relationship: 'Family',
     notes: 'Likes yellow roses, send flowers in advance!',
     reminder_offsets: [7, 1, 0],
+    created_by: 'owner@example.com',
     created_at: new Date().toISOString(),
   },
   {
@@ -37,6 +40,7 @@ const INITIAL_EVENTS: ImportantEvent[] = [
     relationship: 'Family',
     notes: 'Book a nice dinner table.',
     reminder_offsets: [7, 3, 1, 0],
+    created_by: 'owner@example.com',
     created_at: new Date().toISOString(),
   },
   {
@@ -51,19 +55,36 @@ const INITIAL_EVENTS: ImportantEvent[] = [
     relationship: 'Family',
     notes: 'Light a lamp and offer prayers in morning.',
     reminder_offsets: [1, 0],
+    created_by: 'owner@example.com',
     created_at: new Date().toISOString(),
   },
   {
     id: 'evt-4',
-    title: 'First Job Offer Anniversary',
+    title: 'Career Milestone',
     category: 'Milestone',
     date: '2023-01-15',
     year_known: true,
     recurrence: 'yearly',
-    visibility: 'private',
+    visibility: 'private', // OWNER ONLY
     relationship: 'Self',
-    notes: 'Personal career milestone.',
+    notes: 'Personal career anniversary.',
     reminder_offsets: [0],
+    created_by: 'owner@example.com',
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'evt-5',
+    title: "Leap-Day Friend's Birthday",
+    person_name: 'Alex',
+    category: 'Birthday',
+    date: '1996-02-29',
+    year_known: true,
+    recurrence: 'yearly',
+    visibility: 'shared',
+    relationship: 'Close Friend',
+    notes: 'Born on Feb 29 leap day! Observed on Feb 28 on regular years.',
+    reminder_offsets: [1, 0],
+    created_by: 'owner@example.com',
     created_at: new Date().toISOString(),
   }
 ];
@@ -71,13 +92,106 @@ const INITIAL_EVENTS: ImportantEvent[] = [
 const INITIAL_MEMBERS: Member[] = [
   {
     id: 'mem-1',
+    name: 'You (Owner)',
     email: 'owner@example.com',
     role: 'owner',
     status: 'active',
-    invited_at: new Date().toISOString(),
-    accepted_at: new Date().toISOString(),
+    invited_at: '2026-01-01T00:00:00.000Z',
+    accepted_at: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'mem-2',
+    name: 'Priya',
+    email: 'priya.family@gmail.com',
+    role: 'member',
+    status: 'active',
+    invited_at: '2026-02-15T00:00:00.000Z',
+    accepted_at: '2026-02-16T00:00:00.000Z',
   }
 ];
+
+export function getMasterPasscode(): string {
+  const code = localStorage.getItem(STORAGE_KEYS.MASTER_PASSCODE);
+  if (!code) {
+    localStorage.setItem(STORAGE_KEYS.MASTER_PASSCODE, DEFAULT_MASTER_PASSCODE);
+    return DEFAULT_MASTER_PASSCODE;
+  }
+  return code;
+}
+
+export function setMasterPasscode(code: string): void {
+  localStorage.setItem(STORAGE_KEYS.MASTER_PASSCODE, code.trim());
+}
+
+export function getVaultAuth(): VaultAuthState | null {
+  const data = localStorage.getItem(STORAGE_KEYS.VAULT_AUTH);
+  if (!data) return null;
+  try {
+    const parsed = JSON.parse(data);
+    if (parsed && parsed.isUnlocked) return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveVaultAuth(auth: VaultAuthState | null): void {
+  if (!auth) {
+    localStorage.removeItem(STORAGE_KEYS.VAULT_AUTH);
+  } else {
+    localStorage.setItem(STORAGE_KEYS.VAULT_AUTH, JSON.stringify(auth));
+  }
+}
+
+export function verifyAndUnlock(
+  email: string,
+  passcode: string,
+  name?: string
+): { success: boolean; auth?: VaultAuthState; error?: string } {
+  const masterCode = getMasterPasscode();
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanCode = passcode.trim();
+
+  if (cleanCode !== masterCode) {
+    return { success: false, error: 'Incorrect Family Passcode. Please check with the owner.' };
+  }
+
+  // Check role
+  const members = getStoredMembers();
+  const existing = members.find(m => m.email.toLowerCase() === cleanEmail);
+
+  let role: 'owner' | 'member' = 'member';
+  if (cleanEmail === 'owner@example.com' || (existing && existing.role === 'owner') || members.length <= 1) {
+    role = 'owner';
+  }
+
+  // Add to members if not present
+  if (!existing) {
+    const newMember: Member = {
+      id: `mem-${Date.now()}`,
+      name: name?.trim() || cleanEmail.split('@')[0],
+      email: cleanEmail,
+      role,
+      status: 'active',
+      invited_at: new Date().toISOString(),
+      accepted_at: new Date().toISOString(),
+    };
+    saveMembers([...members, newMember]);
+  } else if (existing.status === 'revoked') {
+    return { success: false, error: 'Your access to this vault was revoked by the owner.' };
+  }
+
+  const authState: VaultAuthState = {
+    isUnlocked: true,
+    userEmail: cleanEmail,
+    userName: name?.trim() || existing?.name || cleanEmail.split('@')[0],
+    role,
+    vaultPasscode: masterCode,
+  };
+
+  saveVaultAuth(authState);
+  return { success: true, auth: authState };
+}
 
 export function getStoredEvents(): ImportantEvent[] {
   const data = localStorage.getItem(STORAGE_KEYS.EVENTS);
@@ -135,24 +249,26 @@ export function saveMembers(members: Member[]): void {
   localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(members));
 }
 
-export function inviteMember(email: string): Member[] {
+export function inviteMember(email: string, name?: string): Member[] {
   const members = getStoredMembers();
-  const existing = members.find(m => m.email.toLowerCase() === email.toLowerCase());
-  if (existing) {
-    if (existing.status === 'revoked') {
-      existing.status = 'active';
-      saveMembers(members);
-    }
-    return members;
+  const cleanEmail = email.trim().toLowerCase();
+  const existingIndex = members.findIndex(m => m.email.toLowerCase() === cleanEmail);
+  
+  let updated: Member[];
+  if (existingIndex >= 0) {
+    updated = [...members];
+    updated[existingIndex] = { ...updated[existingIndex], status: 'active', name: name || updated[existingIndex].name };
+  } else {
+    const newMember: Member = {
+      id: `mem-${Date.now()}`,
+      name: name?.trim() || cleanEmail.split('@')[0],
+      email: cleanEmail,
+      role: 'member',
+      status: 'active',
+      invited_at: new Date().toISOString(),
+    };
+    updated = [...members, newMember];
   }
-  const newMember: Member = {
-    id: `mem-${Date.now()}`,
-    email: email.trim().toLowerCase(),
-    role: 'member',
-    status: 'active',
-    invited_at: new Date().toISOString(),
-  };
-  const updated = [...members, newMember];
   saveMembers(updated);
   return updated;
 }
@@ -164,10 +280,21 @@ export function revokeMember(id: string): Member[] {
   return updated;
 }
 
+export function generateOneClickInviteLink(email?: string): string {
+  const base = window.location.origin + window.location.pathname;
+  const passcode = getMasterPasscode();
+  let url = `${base}?invite=${encodeURIComponent(passcode)}`;
+  if (email) {
+    url += `&email=${encodeURIComponent(email)}`;
+  }
+  return url;
+}
+
 export function exportBackupJSON(): string {
   const data = {
     app: 'Important Dates',
     version: '1.0.0',
+    master_passcode: getMasterPasscode(),
     exported_at: new Date().toISOString(),
     events: getStoredEvents(),
     members: getStoredMembers(),
@@ -185,6 +312,9 @@ export function importBackupJSON(jsonStr: string): { success: boolean; count?: n
     if (data.members && Array.isArray(data.members)) {
       saveMembers(data.members);
     }
+    if (data.master_passcode) {
+      setMasterPasscode(data.master_passcode);
+    }
     return { success: true, count: data.events.length };
   } catch (err: any) {
     return { success: false, error: err.message || 'JSON parse error' };
@@ -197,7 +327,6 @@ export function calculateDueNotifications(events: ImportantEvent[]): InAppNotifi
 
   for (const event of events) {
     const occ = getNextOccurrence(event, now);
-    // Check if daysRemaining matches any of the reminder_offsets
     if (event.reminder_offsets.includes(occ.daysRemaining)) {
       let desc = '';
       if (occ.daysRemaining === 0) {

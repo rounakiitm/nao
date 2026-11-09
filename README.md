@@ -56,3 +56,4 @@ The application works 100% offline out-of-the-box using local storage. When you 
 2. Go to the **SQL Editor** in Supabase and run the schema provided in the app under **Settings -> "Copy PostgreSQL RLS Script"** (also located in `src/lib/supabase.ts`).
 3. In the app, open **Settings**, paste your **Supabase URL** and **Anon Key**, and click **Save Settings**.
 4. In **Manage Access**, invite the email addresses of your family or friends. Only those emails can authenticate and access the shared events.
+

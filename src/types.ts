@@ -15,13 +15,13 @@ export interface ImportantEvent {
   title: string;
   person_name?: string;
   category: EventCategory;
-  date: string; // YYYY-MM-DD or MM-DD (if year unknown: e.g. "1998-05-14" or "0000-05-14")
+  date: string; // YYYY-MM-DD
   year_known: boolean;
   recurrence: RecurrenceType;
   visibility: VisibilityType;
   notes?: string;
-  relationship?: string; // e.g. "Family", "Close Friend", "Work Colleague", "Self"
-  reminder_offsets: number[]; // e.g. [7, 1, 0] means 7 days before, 1 day before, and day of
+  relationship?: string; // e.g. "Family", "Close Friend", "Work", "Self"
+  reminder_offsets: number[]; // e.g. [7, 1, 0]
   created_by?: string;
   created_at?: string;
   updated_at?: string;
@@ -30,17 +30,25 @@ export interface ImportantEvent {
 export interface Member {
   id: string;
   email: string;
+  name?: string;
   role: 'owner' | 'member';
   status: 'active' | 'invited' | 'revoked';
   invited_at: string;
   accepted_at?: string;
 }
 
-export interface UserProfile {
-  id: string;
+export interface CurrentUser {
   email: string;
+  role: 'owner' | 'member' | 'unauthorized';
   display_name: string;
+}
+
+export interface VaultAuthState {
+  isUnlocked: boolean;
+  userEmail: string;
+  userName: string;
   role: 'owner' | 'member';
+  vaultPasscode: string;
 }
 
 export interface InAppNotification {
