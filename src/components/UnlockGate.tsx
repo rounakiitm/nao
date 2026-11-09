@@ -54,8 +54,8 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
             <CalendarHeart className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-tight">Important Dates</h1>
-            <p className="text-xs text-brand-100 mt-1">Private & Sacred Personal Reminder Vault</p>
+            <h1 className="text-3xl font-black tracking-tight">nao</h1>
+            <p className="text-xs text-brand-100 mt-1">Sacred Personal Milestone Vault</p>
           </div>
         </div>
 
@@ -67,7 +67,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
               <span>Invitation Required</span>
             </div>
             <p className="text-xs text-slate-500 mt-2">
-              Please enter your details and the family passcode to unlock this application.
+              Please enter your details and the family passcode to unlock nao.
             </p>
           </div>
 
@@ -137,7 +137,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
               className="w-full py-3 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white rounded-xl text-xs font-bold shadow-md shadow-brand-500/20 transition-all flex items-center justify-center gap-2 mt-4"
             >
               <ShieldCheck className="w-4 h-4" />
-              <span>Unlock & Open Vault</span>
+              <span>Unlock & Open nao</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
@@ -159,4 +159,3 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
     </div>
   );
 };
-
