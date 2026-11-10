@@ -139,3 +139,4 @@ export const NaoLogo: React.FC<NaoLogoProps> = ({
     </svg>
   );
 };
+

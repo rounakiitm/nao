@@ -14,10 +14,14 @@ import {
   Upload, 
   Filter, 
   ChevronRight,
-  ZoomIn
+  ZoomIn,
+  Layers,
+  Cloud
 } from 'lucide-react';
 import { DiaryEntry, DiaryMood } from '../types';
 import { exportDiaryJSON, importDiaryJSON } from '../lib/diaryStorage';
+import { downloadVaultBackupForGoogleDrive, restoreVaultBackupPayload } from '../lib/googleDriveSync';
+import { BulkDiaryImportModal } from './BulkDiaryImportModal';
 
 interface DailyDiaryViewProps {
   entries: DiaryEntry[];
@@ -47,6 +51,7 @@ export const DailyDiaryView: React.FC<DailyDiaryViewProps> = ({
   const [selectedYear, setSelectedYear] = useState<string>('all');
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const [importMessage, setImportMessage] = useState<string | null>(null);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
   // Available Years
   const availableYears = useMemo(() => {
@@ -135,6 +140,42 @@ export const DailyDiaryView: React.FC<DailyDiaryViewProps> = ({
     reader.readAsText(file);
   };
 
+  const handleGoogleDriveBackup = () => {
+    downloadVaultBackupForGoogleDrive('rounaksingh05555@gmail.com');
+    setImportMessage('☁️ Complete Vault backup downloaded! Upload it to your Google Drive to keep it safe forever.');
+    setTimeout(() => setImportMessage(null), 5000);
+  };
+
+  const handleGoogleDriveRestore = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const payload = JSON.parse(event.target?.result as string);
+        const res = restoreVaultBackupPayload(payload);
+        if (res.success) {
+          setImportMessage(`🎉 Restored ${res.diaryCount} diary days and ${res.eventCount} milestones from Google Drive backup!`);
+          onDataChanged();
+          setTimeout(() => setImportMessage(null), 5000);
+        } else {
+          const fallback = importDiaryJSON(event.target?.result as string);
+          if (fallback.success) {
+            setImportMessage(`Successfully restored ${fallback.count} diary days!`);
+            onDataChanged();
+            setTimeout(() => setImportMessage(null), 4000);
+          } else {
+            setImportMessage(`Restore error: ${res.error || fallback.error}`);
+          }
+        }
+      } catch (err: any) {
+        setImportMessage(`Could not read backup file: ${err.message}`);
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="space-y-6">
       
@@ -173,6 +214,15 @@ export const DailyDiaryView: React.FC<DailyDiaryViewProps> = ({
               <Plus className="w-4 h-4 stroke-[3]" />
               <span>Write Today's Diary</span>
             </button>
+
+            <button
+              onClick={() => setIsBulkImportOpen(true)}
+              className="px-4 py-3 bg-purple-800/80 hover:bg-purple-700 active:bg-purple-900 text-white font-bold rounded-2xl text-xs border border-purple-500/50 shadow-md transition-all flex items-center gap-2"
+              title="Import 250+ days from your Notes app at once"
+            >
+              <Layers className="w-4 h-4 text-amber-300" />
+              <span>⚡ Bulk Import (250+ Days)</span>
+            </button>
           </div>
         </div>
       </div>
@@ -209,24 +259,34 @@ export const DailyDiaryView: React.FC<DailyDiaryViewProps> = ({
           </div>
 
           {/* Backup & Import actions */}
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
             <button
               type="button"
-              onClick={handleExport}
-              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5"
-              title="Download backup of all diary entries"
+              onClick={() => setIsBulkImportOpen(true)}
+              className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5"
+              title="Bulk import 250+ days of notes"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export</span>
+              <Layers className="w-3.5 h-3.5 text-purple-700" />
+              <span>Bulk Paste (250+)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleGoogleDriveBackup}
+              className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5"
+              title="Download entire vault backup for Google Drive"
+            >
+              <Cloud className="w-3.5 h-3.5 text-blue-600" />
+              <span>Google Drive Backup</span>
             </button>
 
             <label className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer">
               <Upload className="w-3.5 h-3.5" />
-              <span>Import Previous Days</span>
+              <span>Restore Backup</span>
               <input
                 type="file"
                 accept=".json"
-                onChange={handleImportFile}
+                onChange={handleGoogleDriveRestore}
                 className="hidden"
               />
             </label>
@@ -432,6 +492,17 @@ export const DailyDiaryView: React.FC<DailyDiaryViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Bulk Diary Importer Modal (250+ days) */}
+      <BulkDiaryImportModal
+        isOpen={isBulkImportOpen}
+        onClose={() => setIsBulkImportOpen(false)}
+        onImportComplete={(count) => {
+          setImportMessage(`🎉 Successfully imported ${count} diary days into your vault!`);
+          onDataChanged();
+          setTimeout(() => setImportMessage(null), 5000);
+        }}
+      />
 
     </div>
   );
