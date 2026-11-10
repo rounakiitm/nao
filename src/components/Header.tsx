@@ -11,6 +11,7 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import { InAppNotification, CurrentUser } from '../types';
+import naoLogo from '../assets/logo.png';
 
 interface HeaderProps {
   activeTab: 'dashboard' | 'calendar' | 'all';
@@ -39,7 +40,6 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const logoSrc = `${import.meta.env.BASE_URL}icon-192.png`;
 
   return (
     <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200">
@@ -49,13 +49,9 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
             <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-purple-950/20 border border-purple-900/30 bg-[#181424] flex items-center justify-center">
               <img 
-                src={logoSrc} 
+                src={naoLogo} 
                 alt="nao logo" 
                 className="w-full h-full object-cover" 
-                onError={(e) => {
-                  // Fallback if relative path differs
-                  (e.currentTarget as HTMLImageElement).src = './icon-192.png';
-                }}
               />
             </div>
             <div>

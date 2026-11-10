@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Lock, KeyRound, Mail, User, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Lock, KeyRound, Mail, User, ShieldCheck, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { verifyAndUnlock } from '../lib/storage';
 import { VaultAuthState } from '../types';
+import naoLogo from '../assets/logo.png';
 
 interface UnlockGateProps {
   onUnlockSuccess: (auth: VaultAuthState) => void;
@@ -17,8 +18,8 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
   const [name, setName] = useState('');
   const [email, setEmail] = useState(prefillEmail);
   const [passcode, setPasscode] = useState(prefillPasscode);
+  const [showPasscode, setShowPasscode] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const logoSrc = `${import.meta.env.BASE_URL}icon-192.png`;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,12 +56,9 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
 
           <div className="w-20 h-20 rounded-2xl overflow-hidden mx-auto shadow-xl shadow-purple-950/60 border border-purple-800/40 relative z-10 bg-[#181424]">
             <img 
-              src={logoSrc} 
+              src={naoLogo} 
               alt="nao logo" 
               className="w-full h-full object-cover" 
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src = './icon-192.png';
-              }}
             />
           </div>
 
@@ -98,7 +96,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Rounak, Priya"
+                  placeholder="e.g. Your Name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
@@ -115,7 +113,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
                 <input
                   type="email"
                   required
-                  placeholder="e.g. rounaksingh05555@gmail.com"
+                  placeholder="example@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
@@ -130,13 +128,22 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
               <div className="relative">
                 <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
-                  type="password"
+                  type={showPasscode ? 'text' : 'password'}
                   required
                   placeholder="Enter passcode from Rounak"
                   value={passcode}
                   onChange={(e) => setPasscode(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-mono tracking-wider"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-mono tracking-wider"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPasscode(!showPasscode)}
+                  className="absolute right-3 top-2.5 p-1 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                  title={showPasscode ? 'Hide passcode' : 'Show passcode'}
+                  aria-label={showPasscode ? 'Hide passcode' : 'Show passcode'}
+                >
+                  {showPasscode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
               <p className="text-[10px] text-slate-400 mt-1">
                 (Default passcode is <code className="bg-slate-100 px-1 py-0.5 rounded">FAMILY2026</code>)
