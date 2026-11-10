@@ -8,7 +8,8 @@ import {
   Sparkles, 
   ChevronDown, 
   Check, 
-  ShieldAlert
+  ShieldAlert,
+  Lock
 } from 'lucide-react';
 import { InAppNotification, CurrentUser } from '../types';
 import naoLogo from '../assets/logo.png';
@@ -19,6 +20,7 @@ interface HeaderProps {
   onOpenAddModal: () => void;
   onOpenAccessModal: () => void;
   onOpenSettingsModal: () => void;
+  onLockVault: () => void;
   notifications: InAppNotification[];
   canInstall: boolean;
   onInstallApp: () => void;
@@ -32,6 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAddModal,
   onOpenAccessModal,
   onOpenSettingsModal,
+  onLockVault,
   notifications,
   canInstall,
   onInstallApp,
@@ -177,9 +180,18 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onOpenSettingsModal}
               className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-              title="Settings & Backup"
+              title="Settings & Security"
             >
               <Settings className="w-5 h-5" />
+            </button>
+
+            {/* Lock Vault Button */}
+            <button
+              onClick={onLockVault}
+              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+              title="Lock Vault Now"
+            >
+              <Lock className="w-5 h-5" />
             </button>
 
             {/* User Profile / Account Switcher */}
@@ -232,6 +244,16 @@ export const Header: React.FC<HeaderProps> = ({
                           Test Uninvited Access
                         </span>
                       </button>
+
+                      <div className="pt-1 border-t border-slate-100">
+                        <button
+                          onClick={() => { setShowUserMenu(false); onLockVault(); }}
+                          className="w-full text-left p-2 rounded-lg hover:bg-slate-100 flex items-center gap-2 text-slate-700 font-semibold"
+                        >
+                          <Lock className="w-3.5 h-3.5 text-slate-500" />
+                          <span>Lock Vault Now</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

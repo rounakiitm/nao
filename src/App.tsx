@@ -21,7 +21,8 @@ import {
   getVaultAuth,
   saveVaultAuth,
   verifyAndUnlock,
-  getMasterPasscode
+  getMasterPasscode,
+  lockVault
 } from './lib/storage';
 import { ImportantEvent, Member, InAppNotification, VaultAuthState } from './types';
 
@@ -92,8 +93,9 @@ export const App: React.FC = () => {
     // Register service worker and listen for updates
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
+        const swUrl = `${import.meta.env.BASE_URL}sw.js`;
         navigator.serviceWorker
-          .register('/sw.js')
+          .register(swUrl)
           .then((reg) => {
             if (reg.waiting) {
               setWaitingWorker(reg.waiting);
@@ -196,6 +198,11 @@ export const App: React.FC = () => {
     setAuthState(null);
   };
 
+  const handleLockVault = () => {
+    lockVault();
+    setAuthState(null);
+  };
+
   // If app is locked on this device, show UnlockGate
   if (!authState || !authState.isUnlocked) {
     return (
@@ -221,6 +228,7 @@ export const App: React.FC = () => {
         onOpenAddModal={() => { setEditingEvent(null); setIsEventModalOpen(true); }}
         onOpenAccessModal={() => setIsAccessModalOpen(true)}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+        onLockVault={handleLockVault}
         notifications={notifications}
         canInstall={Boolean(deferredPrompt)}
         onInstallApp={handleInstallApp}
@@ -302,6 +310,11 @@ export const App: React.FC = () => {
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         onDataRestored={refreshData}
+        currentUser={{
+          email: authState.userEmail,
+          role: authState.role,
+          display_name: authState.userName,
+        }}
       />
 
       {/* AI Assistant Modal */}

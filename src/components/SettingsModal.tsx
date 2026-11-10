@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Download, 
@@ -10,21 +10,44 @@ import {
   Shield, 
   Smartphone, 
   CheckCircle,
-  AlertTriangle 
+  AlertTriangle,
+  Fingerprint,
+  KeyRound,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  Lock
 } from 'lucide-react';
-import { exportBackupJSON, importBackupJSON } from '../lib/storage';
+import { 
+  exportBackupJSON, 
+  importBackupJSON,
+  getMasterPasscode,
+  setMasterPasscode,
+  getDevicePin,
+  setDevicePin,
+  isBiometricsConfigured,
+  setBiometricsConfigured
+} from '../lib/storage';
+import { 
+  isBiometricsSupported, 
+  registerBiometrics, 
+  removeBiometricCredential 
+} from '../lib/biometrics';
 import { getSupabaseConfig, saveSupabaseConfig, SUPABASE_SQL_SCHEMA } from '../lib/supabase';
+import { CurrentUser } from '../types';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onDataRestored: () => void;
+  currentUser?: CurrentUser;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
   onDataRestored,
+  currentUser,
 }) => {
   const [copiedSql, setCopiedSql] = useState(false);
   const [importStatus, setImportStatus] = useState<string | null>(null);
@@ -38,6 +61,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [supabaseUrl, setSupabaseUrl] = useState(() => getSupabaseConfig().url);
   const [supabaseKey, setSupabaseKey] = useState(() => getSupabaseConfig().anonKey);
   const [configSaved, setConfigSaved] = useState(false);
+
+  // Security state
+  const [masterPasscodeVal, setMasterPasscodeVal] = useState(() => getMasterPasscode());
+  const [showMasterPasscode, setShowMasterPasscode] = useState(false);
+  const [masterSaved, setMasterSaved] = useState(false);
+
+  const [devicePinVal, setDevicePinVal] = useState(() => getDevicePin() || '');
+  const [showDevicePin, setShowDevicePin] = useState(false);
+  const [pinSaved, setPinSaved] = useState(false);
+
+  const [biometricsSupported, setBiometricsSupported] = useState(false);
+  const [biometricsActive, setBiometricsActive] = useState(() => isBiometricsConfigured());
+  const [biometricLoading, setBiometricLoading] = useState(false);
+  const [biometricError, setBiometricError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      isBiometricsSupported().then((supported) => setBiometricsSupported(supported));
+      setBiometricsActive(isBiometricsConfigured());
+      setMasterPasscodeVal(getMasterPasscode());
+      setDevicePinVal(getDevicePin() || '');
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -116,6 +162,49 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setTimeout(() => setConfigSaved(false), 2000);
   };
 
+  const handleSaveMasterPasscode = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (masterPasscodeVal.trim()) {
+      setMasterPasscode(masterPasscodeVal.trim());
+      setMasterSaved(true);
+      setTimeout(() => setMasterSaved(false), 2500);
+    }
+  };
+
+  const handleSaveDevicePin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setDevicePin(devicePinVal.trim() || null);
+    setPinSaved(true);
+    setTimeout(() => setPinSaved(false), 2500);
+  };
+
+  const handleToggleBiometrics = async () => {
+    setBiometricError(null);
+    if (biometricsActive) {
+      removeBiometricCredential();
+      setBiometricsConfigured(false);
+      setBiometricsActive(false);
+    } else {
+      setBiometricLoading(true);
+      try {
+        const res = await registerBiometrics(
+          currentUser?.display_name || 'Rounak',
+          currentUser?.email || 'rounaksingh05555@gmail.com'
+        );
+        if (res.success) {
+          setBiometricsConfigured(true);
+          setBiometricsActive(true);
+        } else {
+          setBiometricError(res.error || 'Failed to setup biometrics.');
+        }
+      } catch (err: any) {
+        setBiometricError(err.message || 'Biometric enrollment error.');
+      } finally {
+        setBiometricLoading(false);
+      }
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="relative bg-white rounded-3xl shadow-2xl max-w-xl w-full overflow-hidden border border-slate-100 animate-in fade-in duration-200">
@@ -136,6 +225,153 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
           
+          {/* Section: Security, Master Passcode & Device Biometrics */}
+          <div className="space-y-4 p-4 rounded-2xl bg-purple-50/50 border border-purple-100">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-purple-700" />
+                <span>Security, Passcode & Biometrics</span>
+              </h3>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-900 border border-purple-200">
+                Private Vault
+              </span>
+            </div>
+
+            {/* 1. Android / Device Biometric Unlock */}
+            <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Fingerprint className="w-5 h-5 text-purple-600" />
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-800">Device Biometrics (Fingerprint / Face ID)</h4>
+                    <p className="text-[11px] text-slate-500">
+                      {biometricsSupported 
+                        ? 'Unlock instantly using your Android fingerprint or phone screen lock.' 
+                        : 'Biometric hardware not detected on this browser/device.'}
+                    </p>
+                  </div>
+                </div>
+                {biometricsSupported && (
+                  <button
+                    type="button"
+                    onClick={handleToggleBiometrics}
+                    disabled={biometricLoading}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                      biometricsActive
+                        ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
+                        : 'bg-purple-900 hover:bg-purple-800 text-white shadow-sm'
+                    }`}
+                  >
+                    {biometricLoading
+                      ? 'Prompting...'
+                      : biometricsActive
+                      ? 'Disable'
+                      : 'Enable on this Phone'}
+                  </button>
+                )}
+              </div>
+              {biometricsActive && (
+                <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 font-medium">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Fingerprint / Biometric Unlock is active on this device.</span>
+                </div>
+              )}
+              {biometricError && (
+                <div className="text-[11px] text-rose-600 bg-rose-50 p-2 rounded-lg border border-rose-200">
+                  {biometricError}
+                </div>
+              )}
+            </div>
+
+            {/* 2. Personal Device Quick PIN */}
+            <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-2">
+              <div className="flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-slate-600" />
+                <div>
+                  <h4 className="text-xs font-bold text-slate-800">Personal Device Quick PIN</h4>
+                  <p className="text-[11px] text-slate-500">
+                    Set a quick 4-digit PIN stored only on this device for fast unlocking.
+                  </p>
+                </div>
+              </div>
+              <form onSubmit={handleSaveDevicePin} className="flex gap-2 items-center pt-1">
+                <div className="relative flex-1">
+                  <input
+                    type={showDevicePin ? 'text' : 'password'}
+                    placeholder="e.g. 1234 (optional)"
+                    value={devicePinVal}
+                    onChange={(e) => setDevicePinVal(e.target.value)}
+                    maxLength={8}
+                    className="w-full px-3 py-1.5 pr-8 rounded-lg border border-slate-200 text-xs font-mono tracking-wider focus:ring-2 focus:ring-purple-500 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDevicePin(!showDevicePin)}
+                    className="absolute right-2 top-1.5 text-slate-400 hover:text-slate-600"
+                  >
+                    {showDevicePin ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+                <button
+                  type="submit"
+                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-medium transition-colors"
+                >
+                  Save PIN
+                </button>
+                {pinSaved && (
+                  <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+                    <Check className="w-3.5 h-3.5" /> Saved!
+                  </span>
+                )}
+              </form>
+            </div>
+
+            {/* 3. Owner Master Passcode (Owner Only) */}
+            {currentUser?.role === 'owner' && (
+              <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-2">
+                <div className="flex items-center gap-2">
+                  <KeyRound className="w-4 h-4 text-amber-600" />
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-800">Family Master Passcode (Owner Key)</h4>
+                    <p className="text-[11px] text-slate-500">
+                      The authorization key given to family members to unlock the vault.
+                    </p>
+                  </div>
+                </div>
+                <form onSubmit={handleSaveMasterPasscode} className="flex gap-2 items-center pt-1">
+                  <div className="relative flex-1">
+                    <input
+                      type={showMasterPasscode ? 'text' : 'password'}
+                      required
+                      placeholder="e.g. FAMILY2026"
+                      value={masterPasscodeVal}
+                      onChange={(e) => setMasterPasscodeVal(e.target.value)}
+                      className="w-full px-3 py-1.5 pr-8 rounded-lg border border-slate-200 text-xs font-mono tracking-wider focus:ring-2 focus:ring-amber-500 outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowMasterPasscode(!showMasterPasscode)}
+                      className="absolute right-2 top-1.5 text-slate-400 hover:text-slate-600"
+                    >
+                      {showMasterPasscode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-medium transition-colors shadow-sm"
+                  >
+                    Update Key
+                  </button>
+                  {masterSaved && (
+                    <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> Updated!
+                    </span>
+                  )}
+                </form>
+              </div>
+            )}
+          </div>
+
           {/* Section 1: Backup & Restore */}
           <div className="space-y-3">
             <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">

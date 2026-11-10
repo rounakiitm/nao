@@ -8,6 +8,8 @@ const STORAGE_KEYS = {
   MASTER_PASSCODE: 'important_dates_master_passcode',
   SETTINGS: 'important_dates_settings',
   NOTIFICATIONS: 'important_dates_notifications',
+  DEVICE_PIN: 'important_dates_device_pin',
+  BIOMETRICS_ENABLED: 'important_dates_biometrics_enabled',
 };
 
 const OWNER_EMAIL = 'rounaksingh05555@gmail.com';
@@ -125,13 +127,12 @@ export function setMasterPasscode(code: string): void {
   localStorage.setItem(STORAGE_KEYS.MASTER_PASSCODE, code.trim());
 }
 
-export function getVaultAuth(): VaultAuthState | null {
+export function getStoredAuthState(): VaultAuthState | null {
   const data = localStorage.getItem(STORAGE_KEYS.VAULT_AUTH);
   if (!data) return null;
   try {
     const parsed = JSON.parse(data);
-    if (parsed && parsed.isUnlocked) {
-      // If user was previously saved as generic owner, update to Rounak
+    if (parsed) {
       if (parsed.userEmail === 'owner@example.com') {
         parsed.userEmail = OWNER_EMAIL;
         parsed.userName = OWNER_NAME;
@@ -142,6 +143,76 @@ export function getVaultAuth(): VaultAuthState | null {
     return null;
   } catch {
     return null;
+  }
+}
+
+export function getVaultAuth(): VaultAuthState | null {
+  const auth = getStoredAuthState();
+  return auth && auth.isUnlocked ? auth : null;
+}
+
+export function lockVault(): void {
+  const current = getStoredAuthState();
+  if (current) {
+    current.isUnlocked = false;
+    saveVaultAuth(current);
+  }
+}
+
+export function getDevicePin(): string | null {
+  return localStorage.getItem(STORAGE_KEYS.DEVICE_PIN);
+}
+
+export function setDevicePin(pin: string | null): void {
+  if (!pin || !pin.trim()) {
+    localStorage.removeItem(STORAGE_KEYS.DEVICE_PIN);
+  } else {
+    localStorage.setItem(STORAGE_KEYS.DEVICE_PIN, pin.trim());
+  }
+}
+
+export function isBiometricsConfigured(): boolean {
+  return localStorage.getItem(STORAGE_KEYS.BIOMETRICS_ENABLED) === 'true';
+}
+
+export function setBiometricsConfigured(enabled: boolean): void {
+  if (enabled) {
+    localStorage.setItem(STORAGE_KEYS.BIOMETRICS_ENABLED, 'true');
+  } else {
+    localStorage.removeItem(STORAGE_KEYS.BIOMETRICS_ENABLED);
+  }
+}
+
+export function unlockWithPinOrMaster(input: string): { success: boolean; auth?: VaultAuthState; error?: string } {
+  const stored = getStoredAuthState();
+  const masterCode = getMasterPasscode();
+  const devicePin = getDevicePin();
+  const cleanInput = input.trim();
+
+  const isPinMatch = Boolean(devicePin && cleanInput === devicePin);
+  const isMasterMatch = cleanInput === masterCode;
+
+  if (isPinMatch || isMasterMatch) {
+    if (stored) {
+      stored.isUnlocked = true;
+      saveVaultAuth(stored);
+      return { success: true, auth: stored };
+    } else {
+      return verifyAndUnlock(OWNER_EMAIL, masterCode, OWNER_NAME);
+    }
+  }
+
+  return { success: false, error: devicePin ? 'Incorrect PIN or Master Passcode.' : 'Incorrect Master Passcode.' };
+}
+
+export function unlockWithBiometricSession(): { success: boolean; auth?: VaultAuthState; error?: string } {
+  const stored = getStoredAuthState();
+  if (stored) {
+    stored.isUnlocked = true;
+    saveVaultAuth(stored);
+    return { success: true, auth: stored };
+  } else {
+    return verifyAndUnlock(OWNER_EMAIL, getMasterPasscode(), OWNER_NAME);
   }
 }
 
