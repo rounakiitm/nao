@@ -134,21 +134,38 @@ export const BulkDiaryImportModal: React.FC<BulkDiaryImportModalProps> = ({
             <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowGuide(!showGuide)}>
               <div className="flex items-center gap-2 text-xs font-bold text-purple-950">
                 <HelpCircle className="w-4 h-4 text-purple-600" />
-                <span>How to export 250+ notes from Google Keep / Samsung / Apple Notes at once</span>
+                <span>OnePlus 13R (OnePlus Notes) 1-minute export steps:</span>
               </div>
               <span className="text-xs text-purple-700 underline font-medium">
-                {showGuide ? 'Hide instructions' : 'View 1-minute steps'}
+                {showGuide ? 'Hide instructions' : 'View OnePlus 13R instructions'}
               </span>
             </div>
 
             {showGuide && (
               <div className="mt-3 pt-3 border-t border-purple-200/60 text-xs text-slate-700 space-y-2">
-                <p className="font-semibold text-purple-900">📌 Easy Steps to copy all notes in one go:</p>
-                <ol className="list-decimal list-inside space-y-1.5 pl-1">
-                  <li><strong>Google Keep:</strong> On your computer or phone, select your notes, click the 3 dots (⋮) and tap <em>"Copy to Google Docs"</em>. Then simply Copy-Paste the entire Google Doc into the box below!</li>
-                  <li><strong>Apple Notes / Samsung Notes / Xiaomi Notes:</strong> Select all or share as a single text file (.txt / .md / .doc), or select all text and paste below.</li>
-                  <li><strong>Format nao automatically recognizes:</strong> Dates like <code>12-04-2024</code>, <code>2024-04-12</code>, <code>April 12, 2024</code>, or lines starting with <code>Date: ...</code> or dividers like <code>---</code>.</li>
-                </ol>
+                <p className="font-semibold text-purple-900">📱 OnePlus 13R (OxygenOS Notes) Options:</p>
+                <div className="space-y-2 pl-1">
+                  <div className="p-2 bg-white rounded-xl border border-purple-200">
+                    <p className="font-bold text-slate-900">Option A: If your diary is in one or a few running notes</p>
+                    <p className="text-[11px] text-slate-600 mt-0.5">
+                      Open the note in OnePlus Notes → tap the <strong>Share</strong> icon (or 3 dots ⋮) → tap <strong>"Share as text"</strong> → Copy all and paste into the box below!
+                    </p>
+                  </div>
+
+                  <div className="p-2 bg-white rounded-xl border border-purple-200">
+                    <p className="font-bold text-slate-900">Option B: If you have 250 separate notes (Built-in OxygenOS Backup)</p>
+                    <p className="text-[11px] text-slate-600 mt-0.5">
+                      Go to your phone <strong>Settings → Additional Settings → Back up and reset → Back up & migrate → Local backup</strong>. Tap <em>New backup</em>, select <strong>Notes only</strong>, and tap Start. Then upload that backup file directly using the button above!
+                    </p>
+                  </div>
+
+                  <div className="p-2 bg-white rounded-xl border border-purple-200">
+                    <p className="font-bold text-slate-900">Option C: OnePlus Cloud (cloud.heytap.com)</p>
+                    <p className="text-[11px] text-slate-600 mt-0.5">
+                      If Cloud Sync is turned on in your OnePlus Notes, all notes are available at <strong>cloud.heytap.com</strong> on any browser, where you can copy them effortlessly.
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -298,3 +315,4 @@ export const BulkDiaryImportModal: React.FC<BulkDiaryImportModalProps> = ({
     </div>
   );
 };
+
