@@ -81,3 +81,18 @@ export interface SyncStatus {
   lastSyncAt: string | null;
   mode: 'offline-local' | 'cloud-synced';
 }
+
+export type DiaryMood = 'great' | 'happy' | 'peaceful' | 'thoughtful' | 'challenging';
+
+export interface DiaryEntry {
+  id: string;
+  date: string; // YYYY-MM-DD
+  title?: string;
+  content: string;
+  mood?: DiaryMood;
+  photos: string[]; // Base64 image data URLs
+  location?: string;
+  tags?: string[];
+  created_at: string;
+  updated_at?: string;
+}

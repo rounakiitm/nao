@@ -14,11 +14,11 @@ import {
 } from 'lucide-react';
 import { InAppNotification, CurrentUser, SyncStatus } from '../types';
 import { syncEngine } from '../lib/syncEngine';
-import naoLogo from '../assets/logo.png';
+import { NaoLogo } from './NaoLogo';
 
 interface HeaderProps {
-  activeTab: 'dashboard' | 'calendar' | 'all';
-  setActiveTab: (tab: 'dashboard' | 'calendar' | 'all') => void;
+  activeTab: 'dashboard' | 'diary' | 'calendar' | 'all';
+  setActiveTab: (tab: 'dashboard' | 'diary' | 'calendar' | 'all') => void;
   onOpenAddModal: () => void;
   onOpenAccessModal: () => void;
   onOpenSettingsModal: () => void;
@@ -59,12 +59,8 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-between h-16">
           {/* Logo & Title */}
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
-            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-purple-950/20 border border-purple-900/30 bg-[#181424] flex items-center justify-center">
-              <img 
-                src={naoLogo} 
-                alt="nao logo" 
-                className="w-full h-full object-cover" 
-              />
+            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-purple-950/20 border border-purple-900/30 bg-[#181424] flex items-center justify-center flex-shrink-0">
+              <NaoLogo className="w-full h-full" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -88,6 +84,17 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               Dashboard
+            </button>
+            <button
+              onClick={() => setActiveTab('diary')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center gap-1.5 ${
+                activeTab === 'diary'
+                  ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <span>📖</span>
+              <span>Daily Diary</span>
             </button>
             <button
               onClick={() => setActiveTab('calendar')}
@@ -303,24 +310,33 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="md:hidden flex border-t border-slate-200 bg-slate-50 px-2 py-1.5 justify-around">
         <button
           onClick={() => setActiveTab('dashboard')}
-          className={`px-3 py-1.5 text-xs font-medium rounded-lg ${
-            activeTab === 'dashboard' ? 'bg-white shadow text-slate-900' : 'text-slate-500'
+          className={`px-2.5 py-1.5 text-xs font-medium rounded-lg ${
+            activeTab === 'dashboard' ? 'bg-white shadow text-slate-900 font-bold' : 'text-slate-500'
           }`}
         >
           Dashboard
         </button>
         <button
+          onClick={() => setActiveTab('diary')}
+          className={`px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center gap-1 ${
+            activeTab === 'diary' ? 'bg-white shadow text-slate-900 font-bold' : 'text-slate-500'
+          }`}
+        >
+          <span>📖</span>
+          <span>Diary</span>
+        </button>
+        <button
           onClick={() => setActiveTab('calendar')}
-          className={`px-3 py-1.5 text-xs font-medium rounded-lg ${
-            activeTab === 'calendar' ? 'bg-white shadow text-slate-900' : 'text-slate-500'
+          className={`px-2.5 py-1.5 text-xs font-medium rounded-lg ${
+            activeTab === 'calendar' ? 'bg-white shadow text-slate-900 font-bold' : 'text-slate-500'
           }`}
         >
           Calendar
         </button>
         <button
           onClick={() => setActiveTab('all')}
-          className={`px-3 py-1.5 text-xs font-medium rounded-lg ${
-            activeTab === 'all' ? 'bg-white shadow text-slate-900' : 'text-slate-500'
+          className={`px-2.5 py-1.5 text-xs font-medium rounded-lg ${
+            activeTab === 'all' ? 'bg-white shadow text-slate-900 font-bold' : 'text-slate-500'
           }`}
         >
           All Dates

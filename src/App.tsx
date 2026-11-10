@@ -11,7 +11,14 @@ import { UpdateBanner } from './components/UpdateBanner';
 import { UnlockGate } from './components/UnlockGate';
 import { AIAssistantModal } from './components/AIAssistantModal';
 import { LinkedDevicesModal } from './components/LinkedDevicesModal';
+import { DailyDiaryView } from './components/DailyDiaryView';
+import { DiaryEntryModal } from './components/DiaryEntryModal';
 import { syncEngine } from './lib/syncEngine';
+import { 
+  getStoredDiaryEntries, 
+  saveDiaryEntry, 
+  deleteDiaryEntry 
+} from './lib/diaryStorage';
 import { 
   getStoredEvents, 
   saveEvents,
@@ -29,13 +36,14 @@ import {
   setMasterPasscode,
   lockVault
 } from './lib/storage';
-import { ImportantEvent, Member, InAppNotification, VaultAuthState } from './types';
+import { ImportantEvent, Member, InAppNotification, VaultAuthState, DiaryEntry } from './types';
 
 export const App: React.FC = () => {
   const [authState, setAuthState] = useState<VaultAuthState | null>(() => getVaultAuth());
   const [events, setEvents] = useState<ImportantEvent[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'calendar' | 'all'>('dashboard');
+  const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>(() => getStoredDiaryEntries());
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'diary' | 'calendar' | 'all'>('dashboard');
   
   // Modals
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
@@ -43,6 +51,11 @@ export const App: React.FC = () => {
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isLinkedDevicesOpen, setIsLinkedDevicesOpen] = useState(false);
+
+  // Diary Modal States
+  const [isDiaryModalOpen, setIsDiaryModalOpen] = useState(false);
+  const [editingDiaryEntry, setEditingDiaryEntry] = useState<DiaryEntry | null>(null);
+  const [diaryDefaultDate, setDiaryDefaultDate] = useState<string | undefined>(undefined);
 
   // AI Assistant Modal
   const [aiModalEvent, setAiModalEvent] = useState<ImportantEvent | null>(null);
@@ -116,6 +129,30 @@ export const App: React.FC = () => {
     setEvents(loadedEvents);
     setMembers(getStoredMembers());
     setNotifications(calculateDueNotifications(loadedEvents));
+    setDiaryEntries(getStoredDiaryEntries());
+  };
+
+  const handleSaveDiaryEntry = (entry: DiaryEntry) => {
+    const updated = saveDiaryEntry(entry);
+    setDiaryEntries(updated);
+    syncEngine.notifyVaultChanged();
+  };
+
+  const handleDeleteDiaryEntry = (id: string) => {
+    const updated = deleteDiaryEntry(id);
+    setDiaryEntries(updated);
+    syncEngine.notifyVaultChanged();
+  };
+
+  const handleOpenAddDiary = (defaultDate?: string) => {
+    setEditingDiaryEntry(null);
+    setDiaryDefaultDate(defaultDate);
+    setIsDiaryModalOpen(true);
+  };
+
+  const handleEditDiary = (entry: DiaryEntry) => {
+    setEditingDiaryEntry(entry);
+    setIsDiaryModalOpen(true);
   };
 
   useEffect(() => {
@@ -294,6 +331,16 @@ export const App: React.FC = () => {
           />
         )}
 
+        {activeTab === 'diary' && (
+          <DailyDiaryView
+            entries={diaryEntries}
+            onOpenAddModal={handleOpenAddDiary}
+            onEditEntry={handleEditDiary}
+            onDeleteEntry={handleDeleteDiaryEntry}
+            onDataChanged={refreshData}
+          />
+        )}
+
         {activeTab === 'calendar' && (
           <CalendarView
             events={visibleEvents}
@@ -366,6 +413,19 @@ export const App: React.FC = () => {
           role: authState.role,
           display_name: authState.userName,
         }}
+      />
+
+      {/* Daily Diary Entry Modal */}
+      <DiaryEntryModal
+        isOpen={isDiaryModalOpen}
+        onClose={() => {
+          setIsDiaryModalOpen(false);
+          setEditingDiaryEntry(null);
+          setDiaryDefaultDate(undefined);
+        }}
+        onSave={handleSaveDiaryEntry}
+        initialEntry={editingDiaryEntry}
+        defaultDate={diaryDefaultDate}
       />
 
       {/* AI Assistant Modal */}

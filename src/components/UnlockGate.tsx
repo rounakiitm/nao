@@ -28,7 +28,7 @@ import {
 } from '../lib/storage';
 import { authenticateWithBiometrics } from '../lib/biometrics';
 import { VaultAuthState } from '../types';
-import naoLogo from '../assets/logo.png';
+import { NaoLogo } from './NaoLogo';
 
 interface UnlockGateProps {
   onUnlockSuccess: (auth: VaultAuthState) => void;
@@ -174,12 +174,8 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
         <div className="bg-[#181424] p-8 text-white text-center space-y-3 relative overflow-hidden">
           <div className="absolute inset-0 bg-radial from-purple-900/30 via-transparent to-transparent pointer-events-none" />
 
-          <div className="w-20 h-20 rounded-2xl overflow-hidden mx-auto shadow-xl shadow-purple-950/60 border border-purple-800/40 relative z-10 bg-[#181424]">
-            <img 
-              src={naoLogo} 
-              alt="nao logo" 
-              className="w-full h-full object-cover" 
-            />
+          <div className="w-20 h-20 rounded-2xl overflow-hidden mx-auto shadow-xl shadow-purple-950/60 border border-purple-800/40 relative z-10 bg-[#181424] flex items-center justify-center">
+            <NaoLogo className="w-full h-full" />
           </div>
 
           <div className="relative z-10">

@@ -158,3 +158,4 @@ export function unlinkDevice(deviceId: string): LinkedDevice[] {
   saveLinkedDevices(updated);
   return updated;
 }
+

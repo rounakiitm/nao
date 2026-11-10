@@ -1,5 +1,5 @@
 // nao Service Worker - Offline Caching & Push Notifications
-const APP_VERSION = 'v1.0.7';
+const APP_VERSION = 'v1.0.9';
 const CACHE_NAME = `nao-cache-${APP_VERSION}`;
 
 const ASSETS_TO_CACHE = [
@@ -8,7 +8,9 @@ const ASSETS_TO_CACHE = [
   './manifest.webmanifest',
   './favicon.png',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './nao-infinity.svg',
+  './nao-icon.png'
 ];
 
 self.addEventListener('install', (event) => {
