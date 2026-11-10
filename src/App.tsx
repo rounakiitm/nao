@@ -10,11 +10,14 @@ import { InstallPrompt } from './components/InstallPrompt';
 import { UpdateBanner } from './components/UpdateBanner';
 import { UnlockGate } from './components/UnlockGate';
 import { AIAssistantModal } from './components/AIAssistantModal';
+import { LinkedDevicesModal } from './components/LinkedDevicesModal';
 import { 
   getStoredEvents, 
+  saveEvents,
   addOrUpdateEvent, 
   deleteEvent, 
   getStoredMembers, 
+  saveMembers,
   inviteMember, 
   revokeMember,
   calculateDueNotifications,
@@ -22,6 +25,7 @@ import {
   saveVaultAuth,
   verifyAndUnlock,
   getMasterPasscode,
+  setMasterPasscode,
   lockVault
 } from './lib/storage';
 import { ImportantEvent, Member, InAppNotification, VaultAuthState } from './types';
@@ -37,6 +41,7 @@ export const App: React.FC = () => {
   const [editingEvent, setEditingEvent] = useState<ImportantEvent | null>(null);
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isLinkedDevicesOpen, setIsLinkedDevicesOpen] = useState(false);
 
   // AI Assistant Modal
   const [aiModalEvent, setAiModalEvent] = useState<ImportantEvent | null>(null);
@@ -56,13 +61,38 @@ export const App: React.FC = () => {
   const [urlInvitePasscode, setUrlInvitePasscode] = useState<string>('');
   const [urlInviteEmail, setUrlInviteEmail] = useState<string>('');
 
-  // Check URL parameters for 1-click invitation
+  // Check URL parameters for 1-click invitation or device pairing (WhatsApp-style)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const inviteParam = params.get('invite');
     const emailParam = params.get('email');
+    const pairParam = params.get('pair');
 
-    if (inviteParam) {
+    if (pairParam) {
+      try {
+        const decoded = decodeURIComponent(escape(window.atob(pairParam)));
+        const payload = JSON.parse(decoded);
+        if (payload.events && Array.isArray(payload.events)) {
+          saveEvents(payload.events);
+          if (payload.masterPasscode) {
+            setMasterPasscode(payload.masterPasscode);
+          }
+          const ownerAuth: VaultAuthState = {
+            isUnlocked: true,
+            userEmail: payload.ownerEmail || 'rounaksingh05555@gmail.com',
+            userName: payload.ownerName || 'Rounak',
+            role: 'owner',
+            vaultPasscode: payload.masterPasscode || getMasterPasscode(),
+          };
+          saveVaultAuth(ownerAuth);
+          setAuthState(ownerAuth);
+          refreshData();
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      } catch (err) {
+        console.error('Pairing error:', err);
+      }
+    } else if (inviteParam) {
       setUrlInvitePasscode(inviteParam);
       if (emailParam) setUrlInviteEmail(emailParam);
 
@@ -228,6 +258,7 @@ export const App: React.FC = () => {
         onOpenAddModal={() => { setEditingEvent(null); setIsEventModalOpen(true); }}
         onOpenAccessModal={() => setIsAccessModalOpen(true)}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+        onOpenLinkedDevicesModal={() => setIsLinkedDevicesOpen(true)}
         onLockVault={handleLockVault}
         notifications={notifications}
         canInstall={Boolean(deferredPrompt)}
@@ -310,6 +341,16 @@ export const App: React.FC = () => {
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         onDataRestored={refreshData}
+        currentUser={{
+          email: authState.userEmail,
+          role: authState.role,
+          display_name: authState.userName,
+        }}
+      />
+
+      <LinkedDevicesModal
+        isOpen={isLinkedDevicesOpen}
+        onClose={() => setIsLinkedDevicesOpen(false)}
         currentUser={{
           email: authState.userEmail,
           role: authState.role,

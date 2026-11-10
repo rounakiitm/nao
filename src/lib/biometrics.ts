@@ -170,3 +170,4 @@ export function removeBiometricCredential(): void {
     localStorage.removeItem(BIOMETRIC_CREDENTIAL_KEY);
   }
 }
+

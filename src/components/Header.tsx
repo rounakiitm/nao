@@ -9,7 +9,8 @@ import {
   ChevronDown, 
   Check, 
   ShieldAlert,
-  Lock
+  Lock,
+  QrCode
 } from 'lucide-react';
 import { InAppNotification, CurrentUser } from '../types';
 import naoLogo from '../assets/logo.png';
@@ -20,6 +21,7 @@ interface HeaderProps {
   onOpenAddModal: () => void;
   onOpenAccessModal: () => void;
   onOpenSettingsModal: () => void;
+  onOpenLinkedDevicesModal: () => void;
   onLockVault: () => void;
   notifications: InAppNotification[];
   canInstall: boolean;
@@ -34,6 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAddModal,
   onOpenAccessModal,
   onOpenSettingsModal,
+  onOpenLinkedDevicesModal,
   onLockVault,
   notifications,
   canInstall,
@@ -176,6 +179,15 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             )}
 
+            {/* Linked Devices (WhatsApp Style Multi-Device Sync) */}
+            <button
+              onClick={onOpenLinkedDevicesModal}
+              className="p-2 text-slate-600 hover:text-purple-900 hover:bg-purple-50 rounded-lg transition-colors"
+              title="Linked Devices (Phone & Laptop Sync)"
+            >
+              <QrCode className="w-5 h-5 text-purple-700" />
+            </button>
+
             {/* Settings Button */}
             <button
               onClick={onOpenSettingsModal}
@@ -245,7 +257,14 @@ export const Header: React.FC<HeaderProps> = ({
                         </span>
                       </button>
 
-                      <div className="pt-1 border-t border-slate-100">
+                      <div className="pt-1 border-t border-slate-100 space-y-0.5">
+                        <button
+                          onClick={() => { setShowUserMenu(false); onOpenLinkedDevicesModal(); }}
+                          className="w-full text-left p-2 rounded-lg hover:bg-purple-50 flex items-center gap-2 text-purple-900 font-semibold"
+                        >
+                          <QrCode className="w-3.5 h-3.5 text-purple-600" />
+                          <span>Linked Devices (QR Code)</span>
+                        </button>
                         <button
                           onClick={() => { setShowUserMenu(false); onLockVault(); }}
                           className="w-full text-left p-2 rounded-lg hover:bg-slate-100 flex items-center gap-2 text-slate-700 font-semibold"
