@@ -11,6 +11,7 @@ import { UpdateBanner } from './components/UpdateBanner';
 import { UnlockGate } from './components/UnlockGate';
 import { AIAssistantModal } from './components/AIAssistantModal';
 import { LinkedDevicesModal } from './components/LinkedDevicesModal';
+import { syncEngine } from './lib/syncEngine';
 import { 
   getStoredEvents, 
   saveEvents,
@@ -167,8 +168,15 @@ export const App: React.FC = () => {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
+    // Live Cross-Device Sync Listener
+    const handleRemoteVaultRefreshed = () => {
+      refreshData();
+    };
+    window.addEventListener('nao_vault_refreshed', handleRemoteVaultRefreshed);
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('nao_vault_refreshed', handleRemoteVaultRefreshed);
     };
   }, []);
 
@@ -195,6 +203,7 @@ export const App: React.FC = () => {
     const updated = addOrUpdateEvent(event);
     setEvents(updated);
     setNotifications(calculateDueNotifications(updated));
+    syncEngine.notifyVaultChanged();
   };
 
   const handleDeleteEvent = (id: string) => {
@@ -202,6 +211,7 @@ export const App: React.FC = () => {
       const updated = deleteEvent(id);
       setEvents(updated);
       setNotifications(calculateDueNotifications(updated));
+      syncEngine.notifyVaultChanged();
     }
   };
 

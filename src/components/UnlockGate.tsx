@@ -9,7 +9,10 @@ import {
   Eye, 
   EyeOff, 
   Fingerprint, 
-  ArrowLeft 
+  ArrowLeft,
+  QrCode,
+  Link,
+  Smartphone
 } from 'lucide-react';
 import { 
   verifyAndUnlock, 
@@ -17,7 +20,11 @@ import {
   unlockWithPinOrMaster, 
   unlockWithBiometricSession, 
   isBiometricsConfigured,
-  getDevicePin
+  getDevicePin,
+  saveEvents,
+  setMasterPasscode,
+  saveVaultAuth,
+  getMasterPasscode
 } from '../lib/storage';
 import { authenticateWithBiometrics } from '../lib/biometrics';
 import { VaultAuthState } from '../types';
@@ -36,6 +43,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
 }) => {
   const storedAuth = getStoredAuthState();
   const [isInvitationMode, setIsInvitationMode] = useState(!storedAuth);
+  const [activeSetupTab, setActiveSetupTab] = useState<'qr_pair' | 'passcode'>('qr_pair');
 
   // Quick Unlock States
   const [quickPasscode, setQuickPasscode] = useState('');
@@ -48,6 +56,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
   const [email, setEmail] = useState(prefillEmail);
   const [passcode, setPasscode] = useState(prefillPasscode);
   const [showPasscode, setShowPasscode] = useState(false);
+  const [pairLinkInput, setPairLinkInput] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const hasBiometrics = isBiometricsConfigured();
@@ -87,6 +96,47 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
       onUnlockSuccess(res.auth);
     } else {
       setQuickError(res.error || 'Incorrect PIN or Passcode.');
+    }
+  };
+
+  // Handle Pairing Link from WhatsApp or Main Phone
+  const handlePairLinkSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    let code = pairLinkInput.trim();
+    if (!code) {
+      setError('Please paste the pairing link or code sent from your phone.');
+      return;
+    }
+
+    try {
+      if (code.includes('pair=')) {
+        const match = code.match(/pair=([^&]+)/);
+        if (match) code = decodeURIComponent(match[1]);
+      }
+
+      const decoded = decodeURIComponent(escape(window.atob(code)));
+      const payload = JSON.parse(decoded);
+
+      if (payload.events && Array.isArray(payload.events)) {
+        saveEvents(payload.events);
+        if (payload.masterPasscode) {
+          setMasterPasscode(payload.masterPasscode);
+        }
+        const ownerAuth: VaultAuthState = {
+          isUnlocked: true,
+          userEmail: payload.ownerEmail || 'rounaksingh05555@gmail.com',
+          userName: payload.ownerName || 'Rounak',
+          role: 'owner',
+          vaultPasscode: payload.masterPasscode || getMasterPasscode(),
+        };
+        saveVaultAuth(ownerAuth);
+        onUnlockSuccess(ownerAuth);
+      } else {
+        setError('Invalid pairing code. Please send a new link from your phone.');
+      }
+    } catch (err) {
+      setError('Could not read pairing link. Please make sure the full link was copied.');
     }
   };
 
@@ -226,25 +276,16 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
                 onClick={() => setIsInvitationMode(true)}
                 className="text-xs text-purple-700 hover:text-purple-900 font-semibold hover:underline"
               >
-                Switch account or enter invitation link
+                Switch account or link additional device
               </button>
             </div>
           </div>
         ) : (
-          /* View 2: Full Invitation Gate (New Device or Switching Accounts) */
+          /* View 2: Setup New Device / Link Device / Invitation Gate */
           <div className="p-8 space-y-5">
-            <div className="space-y-1 text-center">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
-                <Lock className="w-3.5 h-3.5 text-slate-500" />
-                <span>Invitation Required</span>
-              </div>
-              <p className="text-xs text-slate-500 mt-2">
-                Please enter your details and the family passcode to unlock nao.
-              </p>
-            </div>
-
+            
             {storedAuth && (
-              <div className="text-center">
+              <div className="text-center pb-1">
                 <button
                   type="button"
                   onClick={() => setIsInvitationMode(false)}
@@ -256,96 +297,176 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
               </div>
             )}
 
+            {/* Setup Mode Switcher */}
+            <div className="flex bg-slate-100 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setActiveSetupTab('qr_pair')}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                  activeSetupTab === 'qr_pair'
+                    ? 'bg-white text-purple-950 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <QrCode className="w-3.5 h-3.5 text-purple-600" />
+                <span>Link with Phone</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSetupTab('passcode')}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                  activeSetupTab === 'passcode'
+                    ? 'bg-white text-purple-950 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <KeyRound className="w-3.5 h-3.5 text-amber-600" />
+                <span>Passcode</span>
+              </button>
+            </div>
+
             {error && (
               <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium">
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-3.5">
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Your Name
-                </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Your Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
-                  />
+            {activeSetupTab === 'qr_pair' ? (
+              /* Tab 1: WhatsApp-style Pairing Helper */
+              <div className="space-y-4">
+                <div className="p-3.5 bg-purple-50/70 border border-purple-100 rounded-2xl text-xs space-y-2">
+                  <div className="flex items-center gap-1.5 font-bold text-purple-950">
+                    <Smartphone className="w-4 h-4 text-purple-700" />
+                    <span>How to Link This Device:</span>
+                  </div>
+                  <ol className="list-decimal pl-4 space-y-1 text-slate-600 text-[11px]">
+                    <li>Open <strong>nao</strong> on your main phone.</li>
+                    <li>Tap the <strong>QR icon (`[ ⛶ ]`)</strong> in the top header.</li>
+                    <li>Tap <strong>"Send via WhatsApp"</strong> to send the link to this device, or scan the QR code!</li>
+                  </ol>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Your Email Address *
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                  <input
-                    type="email"
-                    required
-                    placeholder="example@gmail.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
-                  />
-                </div>
-              </div>
+                <form onSubmit={handlePairLinkSubmit} className="space-y-2.5">
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                    Paste Pairing Link from Phone:
+                  </label>
+                  <div className="relative">
+                    <Link className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                    <input
+                      type="text"
+                      placeholder="Paste link from WhatsApp (e.g. ?pair=...)"
+                      value={pairLinkInput}
+                      onChange={(e) => setPairLinkInput(e.target.value)}
+                      className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-purple-500 outline-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 bg-purple-900 hover:bg-purple-800 text-white rounded-xl text-xs font-bold shadow-md shadow-purple-950/20 transition-all flex items-center justify-center gap-2"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-amber-400" />
+                    <span>Link & Connect Device</span>
+                  </button>
+                </form>
 
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Family Invitation Passcode *
-                </label>
-                <div className="relative">
-                  <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                  <input
-                    type={showPasscode ? 'text' : 'password'}
-                    required
-                    placeholder="Enter passcode from Rounak"
-                    value={passcode}
-                    onChange={(e) => setPasscode(e.target.value)}
-                    className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-mono tracking-wider"
-                  />
+                {/* Quick Owner Unlock button */}
+                <div className="pt-1 text-center">
                   <button
                     type="button"
-                    onClick={() => setShowPasscode(!showPasscode)}
-                    className="absolute right-3 top-2.5 p-1 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
-                    title={showPasscode ? 'Hide passcode' : 'Show passcode'}
-                    aria-label={showPasscode ? 'Hide passcode' : 'Show passcode'}
+                    onClick={handleQuickOwnerUnlock}
+                    className="text-xs text-purple-700 hover:text-purple-900 font-semibold hover:underline"
                   >
-                    {showPasscode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    👑 First time on this device? Enter as Rounak (Owner)
                   </button>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">
-                  (Default passcode is <code className="bg-slate-100 px-1 py-0.5 rounded">FAMILY2026</code>)
-                </p>
               </div>
+            ) : (
+              /* Tab 2: Standard Invitation Form */
+              <form onSubmit={handleSubmit} className="space-y-3.5">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Your Name
+                  </label>
+                  <div className="relative">
+                    <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Your Name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                    />
+                  </div>
+                </div>
 
-              <button
-                type="submit"
-                className="w-full py-3 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white rounded-xl text-xs font-bold shadow-md shadow-purple-950/20 transition-all flex items-center justify-center gap-2 mt-4"
-              >
-                <ShieldCheck className="w-4 h-4 text-amber-400" />
-                <span>Unlock & Open nao</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Your Email Address *
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                    <input
+                      type="email"
+                      required
+                      placeholder="example@gmail.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                    />
+                  </div>
+                </div>
 
-            {/* Quick Owner Unlock button */}
-            <div className="pt-2 text-center">
-              <button
-                type="button"
-                onClick={handleQuickOwnerUnlock}
-                className="text-xs text-purple-700 hover:text-purple-900 font-semibold hover:underline"
-              >
-                👑 First time on this device? Enter as Rounak (Owner)
-              </button>
-            </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Family Invitation Passcode *
+                  </label>
+                  <div className="relative">
+                    <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                    <input
+                      type={showPasscode ? 'text' : 'password'}
+                      required
+                      placeholder="Enter passcode from Rounak"
+                      value={passcode}
+                      onChange={(e) => setPasscode(e.target.value)}
+                      className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-mono tracking-wider"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasscode(!showPasscode)}
+                      className="absolute right-3 top-2.5 p-1 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                      title={showPasscode ? 'Hide passcode' : 'Show passcode'}
+                      aria-label={showPasscode ? 'Hide passcode' : 'Show passcode'}
+                    >
+                      {showPasscode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    (Default passcode is <code className="bg-slate-100 px-1 py-0.5 rounded">FAMILY2026</code>)
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white rounded-xl text-xs font-bold shadow-md shadow-purple-950/20 transition-all flex items-center justify-center gap-2 mt-4"
+                >
+                  <ShieldCheck className="w-4 h-4 text-amber-400" />
+                  <span>Unlock & Open nao</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+
+                {/* Quick Owner Unlock button */}
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={handleQuickOwnerUnlock}
+                    className="text-xs text-purple-700 hover:text-purple-900 font-semibold hover:underline"
+                  >
+                    👑 First time on this device? Enter as Rounak (Owner)
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         )}
 

@@ -60,3 +60,24 @@ export interface InAppNotification {
   read: boolean;
   created_at: string;
 }
+
+export type DeviceType = 'phone' | 'tablet' | 'laptop' | 'desktop';
+
+export interface LinkedDevice {
+  id: string;
+  name: string;
+  type: DeviceType;
+  browser?: string;
+  os?: string;
+  isCurrentDevice: boolean;
+  isPrimary: boolean;
+  pairedAt: string;
+  lastSeenAt: string;
+}
+
+export interface SyncStatus {
+  isOnline: boolean;
+  isSyncing: boolean;
+  lastSyncAt: string | null;
+  mode: 'offline-local' | 'cloud-synced';
+}

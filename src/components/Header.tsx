@@ -12,7 +12,8 @@ import {
   Lock,
   QrCode
 } from 'lucide-react';
-import { InAppNotification, CurrentUser } from '../types';
+import { InAppNotification, CurrentUser, SyncStatus } from '../types';
+import { syncEngine } from '../lib/syncEngine';
 import naoLogo from '../assets/logo.png';
 
 interface HeaderProps {
@@ -46,6 +47,11 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>(() => syncEngine.getStatus());
+
+  React.useEffect(() => {
+    return syncEngine.subscribe(setSyncStatus);
+  }, []);
 
   return (
     <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200">
@@ -182,10 +188,12 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Linked Devices (WhatsApp Style Multi-Device Sync) */}
             <button
               onClick={onOpenLinkedDevicesModal}
-              className="p-2 text-slate-600 hover:text-purple-900 hover:bg-purple-50 rounded-lg transition-colors"
-              title="Linked Devices (Phone & Laptop Sync)"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-purple-200/80 bg-purple-50/70 hover:bg-purple-100 text-purple-900 text-xs font-semibold transition-all"
+              title="Linked Devices (Phone, Tablet & Laptop Sync)"
             >
-              <QrCode className="w-5 h-5 text-purple-700" />
+              <QrCode className="w-4 h-4 text-purple-700" />
+              <span className={`w-1.5 h-1.5 rounded-full ${syncStatus.isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+              <span className="hidden sm:inline">{syncStatus.isOnline ? 'Linked & Synced' : 'Offline'}</span>
             </button>
 
             {/* Settings Button */}
