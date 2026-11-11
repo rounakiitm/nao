@@ -13,6 +13,8 @@ import { AIAssistantModal } from './components/AIAssistantModal';
 import { LinkedDevicesModal } from './components/LinkedDevicesModal';
 import { DailyDiaryView } from './components/DailyDiaryView';
 import { DiaryEntryModal } from './components/DiaryEntryModal';
+import { ControlCenterModal, TabId } from './components/ControlCenterModal';
+import { getSavedTheme, applyTheme } from './lib/themeManager';
 import { syncEngine } from './lib/syncEngine';
 import { 
   getStoredDiaryEntries, 
@@ -50,6 +52,8 @@ export const App: React.FC = () => {
   const [editingEvent, setEditingEvent] = useState<ImportantEvent | null>(null);
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isControlCenterOpen, setIsControlCenterOpen] = useState(false);
+  const [controlCenterInitialTab, setControlCenterInitialTab] = useState<TabId>('profile');
   const [isLinkedDevicesOpen, setIsLinkedDevicesOpen] = useState(false);
 
   // Diary Modal States
@@ -121,6 +125,11 @@ export const App: React.FC = () => {
         }
       }
     }
+  }, []);
+
+  // Initialize active theme
+  useEffect(() => {
+    applyTheme(getSavedTheme());
   }, []);
 
   // Load initial data
@@ -303,8 +312,18 @@ export const App: React.FC = () => {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenAddModal={() => { setEditingEvent(null); setIsEventModalOpen(true); }}
-        onOpenAccessModal={() => setIsAccessModalOpen(true)}
-        onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+        onOpenAccessModal={() => {
+          setControlCenterInitialTab('accounts');
+          setIsControlCenterOpen(true);
+        }}
+        onOpenSettingsModal={() => {
+          setControlCenterInitialTab('security');
+          setIsControlCenterOpen(true);
+        }}
+        onOpenControlCenter={(tab?: string) => {
+          setControlCenterInitialTab((tab as TabId) || 'profile');
+          setIsControlCenterOpen(true);
+        }}
         onOpenLinkedDevicesModal={() => setIsLinkedDevicesOpen(true)}
         onLockVault={handleLockVault}
         notifications={notifications}
@@ -403,6 +422,27 @@ export const App: React.FC = () => {
           role: authState.role,
           display_name: authState.userName,
         }}
+      />
+
+      {/* 3-Dots Vault Control Center & Dashboard Hub */}
+      <ControlCenterModal
+        isOpen={isControlCenterOpen}
+        onClose={() => setIsControlCenterOpen(false)}
+        currentUser={{
+          email: authState.userEmail,
+          role: authState.role,
+          display_name: authState.userName,
+        }}
+        onSwitchUser={handleSwitchUser}
+        onLockVault={handleLockVault}
+        members={members}
+        onInviteMember={handleInvite}
+        onRevokeMember={handleRevoke}
+        eventsCount={events.length}
+        diaryEntriesCount={diaryEntries.length}
+        onDataRestored={refreshData}
+        onOpenLinkedDevicesModal={() => setIsLinkedDevicesOpen(true)}
+        initialTab={controlCenterInitialTab}
       />
 
       <LinkedDevicesModal

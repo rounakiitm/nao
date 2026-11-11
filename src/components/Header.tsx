@@ -10,11 +10,13 @@ import {
   Check, 
   ShieldAlert,
   Lock,
-  QrCode
+  QrCode,
+  MoreVertical
 } from 'lucide-react';
 import { InAppNotification, CurrentUser, SyncStatus } from '../types';
 import { syncEngine } from '../lib/syncEngine';
 import { NaoLogo } from './NaoLogo';
+import { getUserProfile } from '../lib/profileManager';
 
 interface HeaderProps {
   activeTab: 'dashboard' | 'diary' | 'calendar' | 'all';
@@ -22,6 +24,7 @@ interface HeaderProps {
   onOpenAddModal: () => void;
   onOpenAccessModal: () => void;
   onOpenSettingsModal: () => void;
+  onOpenControlCenter: (tab?: string) => void;
   onOpenLinkedDevicesModal: () => void;
   onLockVault: () => void;
   notifications: InAppNotification[];
@@ -37,6 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAddModal,
   onOpenAccessModal,
   onOpenSettingsModal,
+  onOpenControlCenter,
   onOpenLinkedDevicesModal,
   onLockVault,
   notifications,
@@ -48,6 +52,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(() => syncEngine.getStatus());
+  const profile = getUserProfile();
 
   React.useEffect(() => {
     return syncEngine.subscribe(setSyncStatus);
@@ -181,18 +186,7 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
 
-            {/* Access Control Button (Visible to Owner) */}
-            {currentUser.role === 'owner' && (
-              <button
-                onClick={onOpenAccessModal}
-                className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-                title="Manage Family Access"
-              >
-                <Users className="w-5 h-5" />
-              </button>
-            )}
-
-            {/* Linked Devices (WhatsApp Style Multi-Device Sync) */}
+            {/* Linked Devices Status Pill */}
             <button
               onClick={onOpenLinkedDevicesModal}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-purple-200/80 bg-purple-50/70 hover:bg-purple-100 text-purple-900 text-xs font-semibold transition-all"
@@ -200,99 +194,37 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <QrCode className="w-4 h-4 text-purple-700" />
               <span className={`w-1.5 h-1.5 rounded-full ${syncStatus.isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-              <span className="hidden sm:inline">{syncStatus.isOnline ? 'Linked & Synced' : 'Offline'}</span>
+              <span className="hidden sm:inline">{syncStatus.isOnline ? 'Synced' : 'Offline'}</span>
             </button>
 
-            {/* Settings Button */}
+            {/* Add Date Button */}
             <button
-              onClick={onOpenSettingsModal}
-              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-              title="Settings & Security"
+              onClick={onOpenAddModal}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-950 rounded-xl shadow-sm transition-all"
             >
-              <Settings className="w-5 h-5" />
+              <Plus className="w-4 h-4 text-amber-400" />
+              <span className="hidden sm:inline">Add Date</span>
             </button>
 
-            {/* Lock Vault Button */}
+            {/* User Profile Avatar / Quick Link */}
             <button
-              onClick={onLockVault}
-              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-              title="Lock Vault Now"
+              onClick={() => onOpenControlCenter('profile')}
+              className="flex items-center gap-1.5 p-1 rounded-xl border border-slate-200 hover:border-purple-300 hover:bg-purple-50/50 transition-all"
+              title="Profile & Owner Settings"
             >
-              <Lock className="w-5 h-5" />
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-950 to-indigo-950 text-amber-300 flex items-center justify-center font-bold text-xs shadow-xs">
+                {profile.avatar || '👑'}
+              </div>
             </button>
 
-            {/* User Profile / Account Switcher */}
-            <div className="relative">
-              <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-1.5 p-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors"
-              >
-                <div className="w-6 h-6 rounded-full bg-slate-900 text-amber-400 flex items-center justify-center font-bold text-[11px]">
-                  {currentUser.email[0].toUpperCase()}
-                </div>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-              </button>
-
-              {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 p-3 z-50 text-xs space-y-2">
-                  <div className="p-2 bg-slate-50 rounded-xl">
-                    <span className="block text-[11px] text-slate-400">Current Account</span>
-                    <span className="font-bold text-slate-800 truncate block">{currentUser.email}</span>
-                    <span className="text-[10px] font-semibold text-amber-700">
-                      {currentUser.role === 'owner' ? '👑 Owner (All privileges)' : '👤 Invited Member (Shared view)'}
-                    </span>
-                  </div>
-
-                  <div className="pt-1">
-                    <span className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                      Switch Role (Demo):
-                    </span>
-                    <div className="space-y-1">
-                      <button
-                        onClick={() => { setShowUserMenu(false); onSwitchUser('rounaksingh05555@gmail.com'); }}
-                        className="w-full text-left p-2 rounded-lg hover:bg-slate-100 flex items-center justify-between text-slate-700 font-medium"
-                      >
-                        <span>👑 Rounak (Owner)</span>
-                        {currentUser.role === 'owner' && <Check className="w-3.5 h-3.5 text-emerald-600" />}
-                      </button>
-                      <button
-                        onClick={() => { setShowUserMenu(false); onSwitchUser('priya.family@gmail.com'); }}
-                        className="w-full text-left p-2 rounded-lg hover:bg-slate-100 flex items-center justify-between text-slate-700 font-medium"
-                      >
-                        <span>👤 Invited Member (priya.family@...)</span>
-                        {currentUser.role === 'member' && <Check className="w-3.5 h-3.5 text-emerald-600" />}
-                      </button>
-                      <button
-                        onClick={() => { setShowUserMenu(false); onSwitchUser('uninvited.person@gmail.com'); }}
-                        className="w-full text-left p-2 rounded-lg hover:bg-rose-50 flex items-center justify-between text-rose-600 font-medium"
-                      >
-                        <span className="flex items-center gap-1.5">
-                          <ShieldAlert className="w-3.5 h-3.5" />
-                          Test Uninvited Access
-                        </span>
-                      </button>
-
-                      <div className="pt-1 border-t border-slate-100 space-y-0.5">
-                        <button
-                          onClick={() => { setShowUserMenu(false); onOpenLinkedDevicesModal(); }}
-                          className="w-full text-left p-2 rounded-lg hover:bg-purple-50 flex items-center gap-2 text-purple-900 font-semibold"
-                        >
-                          <QrCode className="w-3.5 h-3.5 text-purple-600" />
-                          <span>Linked Devices (QR Code)</span>
-                        </button>
-                        <button
-                          onClick={() => { setShowUserMenu(false); onLockVault(); }}
-                          className="w-full text-left p-2 rounded-lg hover:bg-slate-100 flex items-center gap-2 text-slate-700 font-semibold"
-                        >
-                          <Lock className="w-3.5 h-3.5 text-slate-500" />
-                          <span>Lock Vault Now</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* 3-DOTS MENU BUTTON (⋮) -> Vault Control Center & Settings Dashboard */}
+            <button
+              onClick={() => onOpenControlCenter()}
+              className="p-2 text-slate-700 hover:text-purple-950 hover:bg-purple-100/70 rounded-xl border border-slate-200 hover:border-purple-300 transition-all flex items-center justify-center shadow-xs"
+              title="3-Dots Menu: Profile, Permissions, Themes, Storage & Settings"
+            >
+              <MoreVertical className="w-5 h-5 text-slate-700" />
+            </button>
 
             {/* Add Date Button */}
             <button
