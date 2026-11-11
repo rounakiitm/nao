@@ -12,6 +12,9 @@
     "electron:build": "npm run build && electron-builder --win portable"
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/cli": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
     "@supabase/supabase-js": "^2.49.1",
     "@types/qrcode": "^1.5.6",
     "canvas-confetti": "^1.9.4",

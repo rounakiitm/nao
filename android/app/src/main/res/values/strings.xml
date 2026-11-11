@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">nao</string>
+    <string name="title_activity_main">nao</string>
+    <string name="package_name">com.nao.sacredvault</string>
+    <string name="custom_url_scheme">com.nao.sacredvault</string>
+</resources>

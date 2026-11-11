@@ -1,0 +1,8 @@
+{
+  "appId": "com.nao.sacredvault",
+  "appName": "nao",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
