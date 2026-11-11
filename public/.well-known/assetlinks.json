@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "io.github.rounakiitm.twa",
+    "sha256_cert_fingerprints": ["07:B8:E1:08:01:67:2E:3A:D6:70:2E:0D:C0:5F:2E:4C:48:33:27:86:DB:01:93:F2:E8:54:D6:A8:EE:E0:1B:41"]
+  }
+}]
