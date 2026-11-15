@@ -13,6 +13,8 @@ import { AIAssistantModal } from './components/AIAssistantModal';
 import { LinkedDevicesModal } from './components/LinkedDevicesModal';
 import { DailyDiaryView } from './components/DailyDiaryView';
 import { DiaryEntryModal } from './components/DiaryEntryModal';
+import { MinimalNotesFeed } from './components/MinimalNotesFeed';
+import { BottomNavBar } from './components/BottomNavBar';
 import { ControlCenterModal, TabId } from './components/ControlCenterModal';
 import { getSavedTheme, applyTheme } from './lib/themeManager';
 import { syncEngine } from './lib/syncEngine';
@@ -40,12 +42,15 @@ import {
 } from './lib/storage';
 import { ImportantEvent, Member, InAppNotification, VaultAuthState, DiaryEntry } from './types';
 
+export type ActiveAppTab = 'notes' | 'milestones' | 'calendar' | 'dashboard';
+
 export const App: React.FC = () => {
   const [authState, setAuthState] = useState<VaultAuthState | null>(() => getVaultAuth());
   const [events, setEvents] = useState<ImportantEvent[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>(() => getStoredDiaryEntries());
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'diary' | 'calendar' | 'all'>('dashboard');
+  const [activeTab, setActiveTab] = useState<ActiveAppTab>('notes');
+  const [diaryDefaultCategory, setDiaryDefaultCategory] = useState<string>('my baby');
   
   // Modals
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
@@ -153,9 +158,10 @@ export const App: React.FC = () => {
     syncEngine.notifyVaultChanged();
   };
 
-  const handleOpenAddDiary = (defaultDate?: string) => {
+  const handleOpenAddDiary = (defaultDate?: string, category?: string) => {
     setEditingDiaryEntry(null);
     setDiaryDefaultDate(defaultDate);
+    setDiaryDefaultCategory(category || 'my baby');
     setIsDiaryModalOpen(true);
   };
 
@@ -306,8 +312,8 @@ export const App: React.FC = () => {
     : events.filter(e => e.visibility === 'shared');
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Top Navigation */}
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col font-sans selection:bg-amber-500 selection:text-zinc-950">
+      {/* Desktop Header */}
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -338,24 +344,20 @@ export const App: React.FC = () => {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {activeTab === 'dashboard' && (
-          <Dashboard
-            events={visibleEvents}
-            onEdit={(ev) => { setEditingEvent(ev); setIsEventModalOpen(true); }}
-            onDelete={handleDeleteEvent}
-            onOpenAddModal={() => { setEditingEvent(null); setIsEventModalOpen(true); }}
-            onSwitchToCalendar={() => setActiveTab('calendar')}
-            onOpenAI={(ev) => setAiModalEvent(ev)}
-          />
-        )}
-
-        {activeTab === 'diary' && (
-          <DailyDiaryView
+      <main className="flex-1 max-w-4xl w-full mx-auto px-2 sm:px-6 lg:px-8 py-2 sm:py-6">
+        {(activeTab === 'notes' || activeTab === 'milestones') && (
+          <MinimalNotesFeed
             entries={diaryEntries}
-            onOpenAddModal={handleOpenAddDiary}
-            onEditEntry={handleEditDiary}
-            onDeleteEntry={handleDeleteDiaryEntry}
+            events={visibleEvents}
+            onOpenAddDiary={handleOpenAddDiary}
+            onEditDiary={handleEditDiary}
+            onDeleteDiary={handleDeleteDiaryEntry}
+            onOpenAddEvent={() => { setEditingEvent(null); setIsEventModalOpen(true); }}
+            onEditEvent={(ev) => { setEditingEvent(ev); setIsEventModalOpen(true); }}
+            onOpenControlCenter={(tab) => {
+              setControlCenterInitialTab((tab as TabId) || 'profile');
+              setIsControlCenterOpen(true);
+            }}
             onDataChanged={refreshData}
           />
         )}
@@ -370,29 +372,36 @@ export const App: React.FC = () => {
           />
         )}
 
-        {activeTab === 'all' && (
-          <AllDatesView
+        {activeTab === 'dashboard' && (
+          <Dashboard
             events={visibleEvents}
             onEdit={(ev) => { setEditingEvent(ev); setIsEventModalOpen(true); }}
             onDelete={handleDeleteEvent}
             onOpenAddModal={() => { setEditingEvent(null); setIsEventModalOpen(true); }}
+            onSwitchToCalendar={() => setActiveTab('calendar')}
             onOpenAI={(ev) => setAiModalEvent(ev)}
           />
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-6 mt-12 text-center text-xs text-slate-400">
-        <div className="flex items-center justify-center gap-4">
-          <span>Important Dates • Private Vault • Lifelong & Offline</span>
-          <button
-            onClick={handleSignOut}
-            className="text-slate-500 hover:text-rose-600 underline font-medium"
-          >
-            Lock Vault / Sign Out
-          </button>
-        </div>
-      </footer>
+      {/* Native Bottom Navigation Bar */}
+      <BottomNavBar
+        activeTab={activeTab === 'dashboard' ? 'notes' : activeTab}
+        setActiveTab={(tab) => {
+          if (tab === 'vault') {
+            setControlCenterInitialTab('profile');
+            setIsControlCenterOpen(true);
+          } else {
+            setActiveTab(tab);
+          }
+        }}
+        onOpenControlCenter={(tab) => {
+          setControlCenterInitialTab((tab as TabId) || 'profile');
+          setIsControlCenterOpen(true);
+        }}
+        notesCount={diaryEntries.length}
+        milestonesCount={visibleEvents.length}
+      />
 
       {/* Modals */}
       <EventModal
@@ -466,6 +475,7 @@ export const App: React.FC = () => {
         onSave={handleSaveDiaryEntry}
         initialEntry={editingDiaryEntry}
         defaultDate={diaryDefaultDate}
+        defaultCategory={diaryDefaultCategory}
       />
 
       {/* AI Assistant Modal */}

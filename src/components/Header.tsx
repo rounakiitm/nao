@@ -11,7 +11,10 @@ import {
   ShieldAlert,
   Lock,
   QrCode,
-  MoreVertical
+  MoreVertical,
+  BookOpen,
+  Calendar as CalendarIcon,
+  LayoutDashboard
 } from 'lucide-react';
 import { InAppNotification, CurrentUser, SyncStatus } from '../types';
 import { syncEngine } from '../lib/syncEngine';
@@ -19,8 +22,8 @@ import { NaoLogo } from './NaoLogo';
 import { getUserProfile } from '../lib/profileManager';
 
 interface HeaderProps {
-  activeTab: 'dashboard' | 'diary' | 'calendar' | 'all';
-  setActiveTab: (tab: 'dashboard' | 'diary' | 'calendar' | 'all') => void;
+  activeTab: 'notes' | 'milestones' | 'calendar' | 'dashboard';
+  setActiveTab: (tab: 'notes' | 'milestones' | 'calendar' | 'dashboard') => void;
   onOpenAddModal: () => void;
   onOpenAccessModal: () => void;
   onOpenSettingsModal: () => void;
@@ -59,67 +62,69 @@ export const Header: React.FC<HeaderProps> = ({
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200">
+    <header className="hidden md:block sticky top-0 z-30 bg-[#101014]/90 backdrop-blur-md border-b border-zinc-800/80 text-zinc-100">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Title */}
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
-            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-purple-950/20 border border-purple-900/30 bg-[#181424] flex items-center justify-center flex-shrink-0">
+          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('notes')}>
+            <div className="w-9 h-9 rounded-xl overflow-hidden shadow-md border border-zinc-700/60 bg-[#181424] flex items-center justify-center flex-shrink-0">
               <NaoLogo className="w-full h-full" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black tracking-tight text-slate-900 leading-tight">nao</h1>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 bg-amber-50 text-amber-800 rounded border border-amber-200">
+                <h1 className="text-lg font-black tracking-tight text-white leading-tight">nao</h1>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 bg-amber-400/10 text-amber-400 rounded border border-amber-400/20">
                   {currentUser.role === 'owner' ? '👑 Owner' : '👤 Member'}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 hidden sm:block font-medium">Sacred personal dates & memories</p>
+              <p className="text-[11px] text-zinc-400 font-medium">Sacred notes, dates & memories</p>
             </div>
           </div>
 
-          {/* Navigation Tabs (Desktop & Tablet) */}
-          <nav className="hidden md:flex items-center space-x-1 bg-slate-100 p-1 rounded-xl">
+          {/* Navigation Tabs (Desktop) */}
+          <nav className="flex items-center space-x-1 bg-zinc-900/80 p-1 rounded-xl border border-zinc-800">
             <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                activeTab === 'dashboard'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+              onClick={() => setActiveTab('notes')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                activeTab === 'notes'
+                  ? 'bg-amber-400 text-zinc-950 shadow-sm'
+                  : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Dashboard
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Notes & Diary</span>
             </button>
             <button
-              onClick={() => setActiveTab('diary')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center gap-1.5 ${
-                activeTab === 'diary'
-                  ? 'bg-white text-slate-900 shadow-sm font-semibold'
-                  : 'text-slate-600 hover:text-slate-900'
+              onClick={() => setActiveTab('milestones')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                activeTab === 'milestones'
+                  ? 'bg-amber-400 text-zinc-950 shadow-sm'
+                  : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <span>📖</span>
-              <span>Daily Diary</span>
+              <CalendarIcon className="w-3.5 h-3.5" />
+              <span>Milestones</span>
             </button>
             <button
               onClick={() => setActiveTab('calendar')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                 activeTab === 'calendar'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-amber-400 text-zinc-950 shadow-sm'
+                  : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Calendar View
+              Calendar
             </button>
             <button
-              onClick={() => setActiveTab('all')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                activeTab === 'all'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+              onClick={() => setActiveTab('dashboard')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                activeTab === 'dashboard'
+                  ? 'bg-amber-400 text-zinc-950 shadow-sm'
+                  : 'text-zinc-400 hover:text-white'
               }`}
             >
-              All Dates
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>Dashboard</span>
             </button>
           </nav>
 
@@ -128,11 +133,11 @@ export const Header: React.FC<HeaderProps> = ({
             {canInstall && (
               <button
                 onClick={onInstallApp}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 rounded-lg border border-amber-200 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-400 bg-amber-400/10 hover:bg-amber-400/20 rounded-lg border border-amber-400/20 transition-colors"
                 title="Install nao on your device"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Install nao</span>
+                <span>Install</span>
               </button>
             )}
 
@@ -140,43 +145,37 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="relative">
               <button
                 onClick={() => setShowNotifMenu(!showNotifMenu)}
-                className="relative p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                className="relative p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
                 title="Reminders & Notifications"
               >
-                <Bell className="w-5 h-5" />
+                <Bell className="w-4 h-4" />
                 {notifications.length > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white animate-pulse" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
                 )}
               </button>
 
               {showNotifMenu && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="absolute right-0 mt-2 w-80 bg-[#18181c] rounded-2xl shadow-2xl border border-zinc-700 p-4 z-50 animate-in fade-in">
+                  <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
                     <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-brand-600" />
-                      <h4 className="text-sm font-bold text-slate-800">Due Reminders</h4>
+                      <Sparkles className="w-4 h-4 text-amber-400" />
+                      <h4 className="text-sm font-bold text-zinc-100">Due Reminders</h4>
                     </div>
-                    <span className="text-xs text-slate-500">{notifications.length} upcoming</span>
+                    <span className="text-xs text-zinc-400">{notifications.length} upcoming</span>
                   </div>
 
                   <div className="mt-3 max-h-72 overflow-y-auto space-y-2">
                     {notifications.length === 0 ? (
-                      <p className="text-xs text-slate-500 text-center py-6">No reminders due right now.</p>
+                      <p className="text-xs text-zinc-400 text-center py-6">No reminders due right now.</p>
                     ) : (
                       notifications.map((notif) => (
                         <div
                           key={notif.id}
-                          className={`p-2.5 rounded-xl border text-xs ${
-                            notif.days_remaining === 0
-                              ? 'bg-rose-50 border-rose-200 text-rose-900 font-medium'
-                              : notif.days_remaining <= 3
-                              ? 'bg-amber-50 border-amber-200 text-amber-900'
-                              : 'bg-slate-50 border-slate-200 text-slate-800'
-                          }`}
+                          className="p-2.5 rounded-xl border border-zinc-700 bg-zinc-900/60 text-xs text-zinc-200"
                         >
                           <div className="flex justify-between items-center">
                             <span className="font-semibold">{notif.title}</span>
-                            <span className="text-[10px] text-slate-500">{notif.date_string}</span>
+                            <span className="text-[10px] text-zinc-400">{notif.date_string}</span>
                           </div>
                         </div>
                       ))
@@ -189,90 +188,35 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Linked Devices Status Pill */}
             <button
               onClick={onOpenLinkedDevicesModal}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-purple-200/80 bg-purple-50/70 hover:bg-purple-100 text-purple-900 text-xs font-semibold transition-all"
-              title="Linked Devices (Phone, Tablet & Laptop Sync)"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-medium transition-all"
+              title="Linked Devices"
             >
-              <QrCode className="w-4 h-4 text-purple-700" />
-              <span className={`w-1.5 h-1.5 rounded-full ${syncStatus.isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-              <span className="hidden sm:inline">{syncStatus.isOnline ? 'Synced' : 'Offline'}</span>
-            </button>
-
-            {/* Add Date Button */}
-            <button
-              onClick={onOpenAddModal}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-950 rounded-xl shadow-sm transition-all"
-            >
-              <Plus className="w-4 h-4 text-amber-400" />
-              <span className="hidden sm:inline">Add Date</span>
+              <QrCode className="w-3.5 h-3.5 text-amber-400" />
+              <span className={`w-1.5 h-1.5 rounded-full ${syncStatus.isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+              <span>{syncStatus.isOnline ? 'Synced' : 'Offline'}</span>
             </button>
 
             {/* User Profile Avatar / Quick Link */}
             <button
               onClick={() => onOpenControlCenter('profile')}
-              className="flex items-center gap-1.5 p-1 rounded-xl border border-slate-200 hover:border-purple-300 hover:bg-purple-50/50 transition-all"
+              className="flex items-center gap-1.5 p-1 rounded-xl border border-zinc-800 hover:border-amber-400/40 transition-all"
               title="Profile & Owner Settings"
             >
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-950 to-indigo-950 text-amber-300 flex items-center justify-center font-bold text-xs shadow-xs">
+              <div className="w-7 h-7 rounded-lg bg-zinc-800 text-amber-300 flex items-center justify-center font-bold text-xs">
                 {profile.avatar || '👑'}
               </div>
             </button>
 
-            {/* 3-DOTS MENU BUTTON (⋮) -> Vault Control Center & Settings Dashboard */}
+            {/* 3-DOTS MENU BUTTON -> Vault Control Center */}
             <button
               onClick={() => onOpenControlCenter()}
-              className="p-2 text-slate-700 hover:text-purple-950 hover:bg-purple-100/70 rounded-xl border border-slate-200 hover:border-purple-300 transition-all flex items-center justify-center shadow-xs"
-              title="3-Dots Menu: Profile, Permissions, Themes, Storage & Settings"
+              className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl border border-zinc-800 transition-all"
+              title="Vault Settings, Themes, Google Drive & Passcodes"
             >
-              <MoreVertical className="w-5 h-5 text-slate-700" />
-            </button>
-
-            {/* Add Date Button */}
-            <button
-              onClick={onOpenAddModal}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-950 rounded-xl shadow-sm transition-all"
-            >
-              <Plus className="w-4 h-4 text-amber-400" />
-              <span className="hidden sm:inline">Add Date</span>
+              <MoreVertical className="w-4 h-4" />
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Mobile Sub-nav */}
-      <div className="md:hidden flex border-t border-slate-200 bg-slate-50 px-2 py-1.5 justify-around">
-        <button
-          onClick={() => setActiveTab('dashboard')}
-          className={`px-2.5 py-1.5 text-xs font-medium rounded-lg ${
-            activeTab === 'dashboard' ? 'bg-white shadow text-slate-900 font-bold' : 'text-slate-500'
-          }`}
-        >
-          Dashboard
-        </button>
-        <button
-          onClick={() => setActiveTab('diary')}
-          className={`px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center gap-1 ${
-            activeTab === 'diary' ? 'bg-white shadow text-slate-900 font-bold' : 'text-slate-500'
-          }`}
-        >
-          <span>📖</span>
-          <span>Diary</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('calendar')}
-          className={`px-2.5 py-1.5 text-xs font-medium rounded-lg ${
-            activeTab === 'calendar' ? 'bg-white shadow text-slate-900 font-bold' : 'text-slate-500'
-          }`}
-        >
-          Calendar
-        </button>
-        <button
-          onClick={() => setActiveTab('all')}
-          className={`px-2.5 py-1.5 text-xs font-medium rounded-lg ${
-            activeTab === 'all' ? 'bg-white shadow text-slate-900 font-bold' : 'text-slate-500'
-          }`}
-        >
-          All Dates
-        </button>
       </div>
     </header>
   );

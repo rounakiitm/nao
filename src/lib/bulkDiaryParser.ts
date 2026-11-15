@@ -292,7 +292,7 @@ export function parseBulkDiaryText(rawText: string): ParsedBulkEntry[] {
 /**
  * Converts parsed bulk entries into final DiaryEntry array
  */
-export function convertToDiaryEntries(parsedList: ParsedBulkEntry[]): DiaryEntry[] {
+export function convertToDiaryEntries(parsedList: ParsedBulkEntry[], category: string = 'my baby'): DiaryEntry[] {
   return parsedList
     .filter((p) => p.isValid && p.content)
     .map((p, idx) => ({
@@ -302,6 +302,7 @@ export function convertToDiaryEntries(parsedList: ParsedBulkEntry[]): DiaryEntry
       content: p.content,
       mood: p.mood,
       photos: [],
+      category,
       created_at: new Date().toISOString(),
     }));
 }

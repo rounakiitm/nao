@@ -79,12 +79,12 @@ export const AVAILABLE_THEMES: ThemeDefinition[] = [
 const THEME_STORAGE_KEY = 'nao_active_theme';
 
 export function getSavedTheme(): ThemeId {
-  if (typeof window === 'undefined') return 'royal-purple';
+  if (typeof window === 'undefined') return 'midnight-dark';
   const saved = localStorage.getItem(THEME_STORAGE_KEY);
   if (saved && AVAILABLE_THEMES.some((t) => t.id === saved)) {
     return saved as ThemeId;
   }
-  return 'royal-purple';
+  return 'midnight-dark';
 }
 
 export function applyTheme(themeId: ThemeId): void {

@@ -93,6 +93,8 @@ export interface DiaryEntry {
   photos: string[]; // Base64 image data URLs
   location?: string;
   tags?: string[];
+  category?: string; // Folder name, e.g. "my baby", "Default notebook"
+  isFavorite?: boolean;
   created_at: string;
   updated_at?: string;
 }

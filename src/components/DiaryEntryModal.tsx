@@ -19,6 +19,7 @@ interface DiaryEntryModalProps {
   onSave: (entry: DiaryEntry) => void;
   initialEntry?: DiaryEntry | null;
   defaultDate?: string;
+  defaultCategory?: string;
 }
 
 const MOODS: { id: DiaryMood; label: string; emoji: string }[] = [
@@ -35,12 +36,14 @@ export const DiaryEntryModal: React.FC<DiaryEntryModalProps> = ({
   onSave,
   initialEntry,
   defaultDate,
+  defaultCategory,
 }) => {
   const [date, setDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [mood, setMood] = useState<DiaryMood>('peaceful');
   const [location, setLocation] = useState('');
+  const [category, setCategory] = useState<string>('my baby');
   const [photos, setPhotos] = useState<string[]>([]);
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -52,6 +55,7 @@ export const DiaryEntryModal: React.FC<DiaryEntryModalProps> = ({
       setContent(initialEntry.content);
       setMood(initialEntry.mood || 'peaceful');
       setLocation(initialEntry.location || '');
+      setCategory(initialEntry.category || 'my baby');
       setPhotos(initialEntry.photos || []);
     } else {
       setDate(defaultDate || new Date().toISOString().slice(0, 10));
@@ -59,9 +63,10 @@ export const DiaryEntryModal: React.FC<DiaryEntryModalProps> = ({
       setContent('');
       setMood('peaceful');
       setLocation('');
+      setCategory(defaultCategory || 'my baby');
       setPhotos([]);
     }
-  }, [initialEntry, defaultDate, isOpen]);
+  }, [initialEntry, defaultDate, defaultCategory, isOpen]);
 
   if (!isOpen) return null;
 
@@ -103,6 +108,7 @@ export const DiaryEntryModal: React.FC<DiaryEntryModalProps> = ({
       content: content.trim(),
       mood,
       location: location.trim(),
+      category: category.trim() || 'my baby',
       photos,
       created_at: initialEntry ? initialEntry.created_at : new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -137,8 +143,8 @@ export const DiaryEntryModal: React.FC<DiaryEntryModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[78vh] overflow-y-auto">
           
-          {/* Row 1: Date & Mood */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Row 1: Date, Folder & Mood */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
                 Diary Date *
@@ -153,6 +159,19 @@ export const DiaryEntryModal: React.FC<DiaryEntryModalProps> = ({
                   className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-purple-500 outline-none"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Folder / Notebook
+              </label>
+              <input
+                type="text"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="e.g. my baby"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:ring-2 focus:ring-purple-500 outline-none"
+              />
             </div>
 
             <div>
