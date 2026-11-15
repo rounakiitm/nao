@@ -138,7 +138,7 @@ export const MinimalNotesFeed: React.FC<MinimalNotesFeedProps> = ({
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto pb-28 pt-2 sm:pt-4 px-3 sm:px-0 select-none">
+    <div className="w-full max-w-2xl mx-auto pb-16 pt-2 sm:pt-4 px-3 sm:px-0 select-none">
       
       {/* Top Header - Ultra Minimal OnePlus Style */}
       <div className="flex items-center justify-between py-2 sm:py-3 mb-3">
@@ -251,23 +251,6 @@ export const MinimalNotesFeed: React.FC<MinimalNotesFeedProps> = ({
           </span>
         </button>
 
-        {/* 'Milestones & Dates' Folder */}
-        <button
-          onClick={() => setSelectedFolder('Milestones')}
-          className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            selectedFolder === 'Milestones'
-              ? 'bg-amber-400 text-zinc-950 shadow-md shadow-amber-400/20'
-              : 'bg-[#18181c] text-zinc-400 hover:text-zinc-200 border border-zinc-800'
-          }`}
-        >
-          <span>Milestones</span>
-          <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-            selectedFolder === 'Milestones' ? 'bg-zinc-950/20 text-zinc-950 font-bold' : 'bg-zinc-800 text-zinc-400'
-          }`}>
-            {folderCounts.milestones}
-          </span>
-        </button>
-
         {/* 'Favourites' Folder */}
         <button
           onClick={() => setSelectedFolder('Favourites')}
@@ -287,6 +270,25 @@ export const MinimalNotesFeed: React.FC<MinimalNotesFeedProps> = ({
             </span>
           )}
         </button>
+
+        {/* 'Milestones & Dates' Folder (Only if events exist) */}
+        {events.length > 0 && (
+          <button
+            onClick={() => setSelectedFolder('Milestones')}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+              selectedFolder === 'Milestones'
+                ? 'bg-amber-400 text-zinc-950 shadow-md shadow-amber-400/20'
+                : 'bg-[#18181c] text-zinc-400 hover:text-zinc-200 border border-zinc-800'
+            }`}
+          >
+            <span>Milestones</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+              selectedFolder === 'Milestones' ? 'bg-zinc-950/20 text-zinc-950 font-bold' : 'bg-zinc-800 text-zinc-400'
+            }`}>
+              {folderCounts.milestones}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Main Feed Content */}
@@ -474,7 +476,7 @@ export const MinimalNotesFeed: React.FC<MinimalNotesFeedProps> = ({
             onOpenAddDiary(undefined, selectedFolder);
           }
         }}
-        className="fixed bottom-20 sm:bottom-8 right-5 sm:right-8 z-40 w-14 h-14 rounded-full bg-amber-400 hover:bg-amber-300 active:scale-90 text-zinc-950 flex items-center justify-center shadow-2xl shadow-amber-400/30 transition-all border border-amber-300/40"
+        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-amber-400 hover:bg-amber-300 active:scale-90 text-zinc-950 flex items-center justify-center shadow-2xl shadow-amber-400/30 transition-all border border-amber-300/40"
         title="Create new note or memory"
       >
         <Plus className="w-7 h-7 stroke-[2.5]" />

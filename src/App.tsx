@@ -14,7 +14,6 @@ import { LinkedDevicesModal } from './components/LinkedDevicesModal';
 import { DailyDiaryView } from './components/DailyDiaryView';
 import { DiaryEntryModal } from './components/DiaryEntryModal';
 import { MinimalNotesFeed } from './components/MinimalNotesFeed';
-import { BottomNavBar } from './components/BottomNavBar';
 import { ControlCenterModal, TabId } from './components/ControlCenterModal';
 import { getSavedTheme, applyTheme } from './lib/themeManager';
 import { syncEngine } from './lib/syncEngine';
@@ -383,25 +382,6 @@ export const App: React.FC = () => {
           />
         )}
       </main>
-
-      {/* Native Bottom Navigation Bar */}
-      <BottomNavBar
-        activeTab={activeTab === 'dashboard' ? 'notes' : activeTab}
-        setActiveTab={(tab) => {
-          if (tab === 'vault') {
-            setControlCenterInitialTab('profile');
-            setIsControlCenterOpen(true);
-          } else {
-            setActiveTab(tab);
-          }
-        }}
-        onOpenControlCenter={(tab) => {
-          setControlCenterInitialTab((tab as TabId) || 'profile');
-          setIsControlCenterOpen(true);
-        }}
-        notesCount={diaryEntries.length}
-        milestonesCount={visibleEvents.length}
-      />
 
       {/* Modals */}
       <EventModal
