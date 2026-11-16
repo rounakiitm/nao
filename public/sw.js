@@ -1,5 +1,5 @@
 // nao Service Worker - Offline Caching & Push Notifications
-const APP_VERSION = 'v1.6.0';
+const APP_VERSION = 'v1.7.0';
 const CACHE_NAME = `nao-cache-${APP_VERSION}`;
 
 const ASSETS_TO_CACHE = [

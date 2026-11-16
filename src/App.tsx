@@ -459,6 +459,7 @@ export const App: React.FC = () => {
           setDiaryDefaultDate(undefined);
         }}
         onSave={handleSaveDiaryEntry}
+        onDelete={handleDeleteDiaryEntry}
         initialEntry={editingDiaryEntry}
         defaultDate={diaryDefaultDate}
         defaultCategory={diaryDefaultCategory}
