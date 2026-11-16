@@ -22,8 +22,8 @@ import { NaoLogo } from './NaoLogo';
 import { getUserProfile } from '../lib/profileManager';
 
 interface HeaderProps {
-  activeTab: 'notes' | 'milestones' | 'calendar' | 'dashboard';
-  setActiveTab: (tab: 'notes' | 'milestones' | 'calendar' | 'dashboard') => void;
+  activeTab: 'home' | 'calendar' | 'dashboard';
+  setActiveTab: (tab: 'home' | 'calendar' | 'dashboard') => void;
   onOpenAddModal: () => void;
   onOpenAccessModal: () => void;
   onOpenSettingsModal: () => void;
@@ -66,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Title */}
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('notes')}>
+          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('home')}>
             <div className="w-9 h-9 rounded-xl overflow-hidden shadow-md border border-zinc-700/60 bg-[#181424] flex items-center justify-center flex-shrink-0">
               <NaoLogo className="w-full h-full" />
             </div>
@@ -84,47 +84,37 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Navigation Tabs (Desktop) */}
           <nav className="flex items-center space-x-1 bg-zinc-900/80 p-1 rounded-xl border border-zinc-800">
             <button
-              onClick={() => setActiveTab('notes')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
-                activeTab === 'notes'
+              onClick={() => setActiveTab('home')}
+              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                activeTab === 'home'
                   ? 'bg-amber-400 text-zinc-950 shadow-sm'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
               <BookOpen className="w-3.5 h-3.5" />
-              <span>Notes & Diary</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('milestones')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
-                activeTab === 'milestones'
-                  ? 'bg-amber-400 text-zinc-950 shadow-sm'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              <CalendarIcon className="w-3.5 h-3.5" />
-              <span>Milestones</span>
+              <span>Sanctuary</span>
             </button>
             <button
               onClick={() => setActiveTab('calendar')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
                 activeTab === 'calendar'
                   ? 'bg-amber-400 text-zinc-950 shadow-sm'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Calendar
+              <CalendarIcon className="w-3.5 h-3.5" />
+              <span>Calendar</span>
             </button>
             <button
               onClick={() => setActiveTab('dashboard')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
                 activeTab === 'dashboard'
                   ? 'bg-amber-400 text-zinc-950 shadow-sm'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>Dashboard</span>
+              <span>Vault Overview</span>
             </button>
           </nav>
 
