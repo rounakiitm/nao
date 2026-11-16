@@ -340,7 +340,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     value={devicePinVal}
                     onChange={(e) => setDevicePinVal(e.target.value)}
                     maxLength={8}
-                    className="w-full px-3 py-1.5 pr-8 rounded-lg border border-slate-200 text-xs font-mono tracking-wider focus:ring-2 focus:ring-purple-500 outline-none"
+                    className="w-full px-3 py-1.5 pr-8 rounded-lg border border-slate-300 text-xs font-mono font-semibold text-slate-900 bg-white placeholder-slate-400 tracking-wider focus:ring-2 focus:ring-purple-500 outline-none"
                   />
                   <button
                     type="button"
@@ -384,7 +384,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       placeholder="e.g. FAMILY2026"
                       value={masterPasscodeVal}
                       onChange={(e) => setMasterPasscodeVal(e.target.value)}
-                      className="w-full px-3 py-1.5 pr-8 rounded-lg border border-slate-200 text-xs font-mono tracking-wider focus:ring-2 focus:ring-amber-500 outline-none"
+                      className="w-full px-3 py-1.5 pr-8 rounded-lg border border-slate-300 text-xs font-mono font-semibold text-slate-900 bg-white placeholder-slate-400 tracking-wider focus:ring-2 focus:ring-amber-500 outline-none"
                     />
                     <button
                       type="button"

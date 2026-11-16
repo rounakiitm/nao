@@ -168,7 +168,7 @@ export const EventModal: React.FC<EventModalProps> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Mom's Birthday, Wedding Anniversary"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
             />
           </div>
 
@@ -185,7 +185,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                   value={personName}
                   onChange={(e) => setPersonName(e.target.value)}
                   placeholder="e.g. Sarah, Dad"
-                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
             </div>
@@ -199,7 +199,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                 value={relationship}
                 onChange={(e) => setRelationship(e.target.value)}
                 placeholder="Family, Friend, Work"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
           </div>
@@ -228,7 +228,8 @@ export const EventModal: React.FC<EventModalProps> = ({
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-white rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                style={{ colorScheme: 'light' }}
+                className="w-full pl-9 pr-3 py-2 bg-white rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
             {!yearKnown && (
@@ -247,7 +248,7 @@ export const EventModal: React.FC<EventModalProps> = ({
               <select
                 value={recurrence}
                 onChange={(e) => setRecurrence(e.target.value as RecurrenceType)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 <option value="yearly">Every year (Annual)</option>
                 <option value="none">One-time event (No repeat)</option>
@@ -261,7 +262,7 @@ export const EventModal: React.FC<EventModalProps> = ({
               <select
                 value={visibility}
                 onChange={(e) => setVisibility(e.target.value as VisibilityType)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 <option value="shared">Shared with invited members</option>
                 <option value="private">Private (Owner only)</option>
@@ -311,7 +312,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Gift ideas, memorable memories, preferences..."
-                className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-sm font-medium text-slate-900 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
           </div>

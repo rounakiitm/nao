@@ -4,9 +4,91 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 font-sans min-h-screen antialiased selection:bg-brand-500 selection:text-white;
+    @apply font-sans min-h-screen antialiased selection:bg-amber-500 selection:text-zinc-950;
     -webkit-tap-highlight-color: transparent;
   }
+}
+
+/* Universal Form Input Contrast & Visibility Guarantee */
+input, textarea, select {
+  caret-color: #f59e0b;
+}
+
+/* Default fallback: guarantee high-contrast readable dark text in any light context */
+input, textarea, select {
+  color: #0f172a;
+  -webkit-text-fill-color: #0f172a;
+}
+
+/* When inside or styled as light input: force crisp dark slate text */
+.bg-white,
+.bg-slate-50,
+.bg-slate-100,
+.bg-purple-50,
+input.bg-white,
+textarea.bg-white,
+select.bg-white,
+.bg-white input,
+.bg-white textarea,
+.bg-white select,
+.bg-slate-50 input,
+.bg-slate-50 textarea,
+.bg-slate-50 select,
+.bg-slate-100 input,
+.bg-slate-100 textarea,
+.bg-slate-100 select {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+.bg-white input::placeholder,
+.bg-white textarea::placeholder,
+.bg-slate-50 input::placeholder,
+.bg-slate-50 textarea::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+}
+
+/* When styled as dark OLED element: force crisp bright white text */
+.bg-\[\#18181c\] input,
+.bg-\[\#18181c\] textarea,
+.bg-\[\#141418\] input,
+.bg-\[\#141418\] textarea,
+.bg-\[\#121215\],
+input.bg-\[\#121215\],
+textarea.bg-\[\#121215\],
+.dark-input {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-color: #121215 !important;
+  border-color: #3f3f46 !important;
+}
+
+.bg-\[\#18181c\] input::placeholder,
+.bg-\[\#18181c\] textarea::placeholder,
+.bg-\[\#141418\] input::placeholder,
+.bg-\[\#141418\] textarea::placeholder,
+.bg-\[\#121215\]::placeholder,
+.dark-input::placeholder {
+  color: #71717a !important;
+  -webkit-text-fill-color: #71717a !important;
+}
+
+/* Date picker calendar styling */
+input[type="date"] {
+  color-scheme: light;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+.bg-\[\#121215\][type="date"],
+[data-theme="dark"] input[type="date"],
+.dark input[type="date"] {
+  color-scheme: dark !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 
 /* Custom scrollbars */
@@ -18,10 +100,9 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.5);
+  background: rgba(156, 163, 175, 0.4);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(107, 114, 128, 0.8);
+  background: rgba(107, 114, 128, 0.7);
 }
-

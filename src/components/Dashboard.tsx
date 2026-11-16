@@ -166,7 +166,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name, title, or notes..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm"
+              className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-300 bg-white text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm"
             />
           </div>
 

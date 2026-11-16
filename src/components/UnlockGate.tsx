@@ -242,7 +242,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
                     placeholder={hasPin ? 'Enter 4-digit PIN or Passcode' : 'Enter passcode from Rounak'}
                     value={quickPasscode}
                     onChange={(e) => setQuickPasscode(e.target.value)}
-                    className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-mono tracking-wider"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 bg-white placeholder-slate-400 focus:ring-2 focus:ring-amber-500 outline-none font-mono tracking-wider"
                   />
                   <button
                     type="button"
@@ -353,7 +353,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
                       placeholder="Paste link from WhatsApp (e.g. ?pair=...)"
                       value={pairLinkInput}
                       onChange={(e) => setPairLinkInput(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-purple-500 outline-none"
+                      className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-900 bg-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 outline-none"
                     />
                   </div>
                   <button
@@ -391,7 +391,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
                       placeholder="e.g. Your Name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                      className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 bg-white placeholder-slate-400 focus:ring-2 focus:ring-amber-500 outline-none"
                     />
                   </div>
                 </div>
@@ -408,7 +408,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
                       placeholder="example@gmail.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                      className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 bg-white placeholder-slate-400 focus:ring-2 focus:ring-amber-500 outline-none"
                     />
                   </div>
                 </div>
@@ -425,7 +425,7 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({
                       placeholder="Enter passcode from Rounak"
                       value={passcode}
                       onChange={(e) => setPasscode(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-mono tracking-wider"
+                      className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 bg-white placeholder-slate-400 focus:ring-2 focus:ring-amber-500 outline-none font-mono tracking-wider"
                     />
                     <button
                       type="button"

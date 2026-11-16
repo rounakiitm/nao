@@ -122,7 +122,7 @@ export const ManageAccessModal: React.FC<ManageAccessModalProps> = ({
                 value={passcodeInput}
                 onChange={(e) => setPasscodeInput(e.target.value)}
                 placeholder="Set a secret passcode"
-                className="flex-1 px-3 py-2 bg-white rounded-xl border border-brand-200 text-xs font-mono font-bold tracking-wider focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="flex-1 px-3 py-2 bg-white rounded-xl border border-slate-300 text-xs font-mono font-bold tracking-wider text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
               <button
                 type="submit"
@@ -167,7 +167,7 @@ export const ManageAccessModal: React.FC<ManageAccessModalProps> = ({
                 value={nameInput}
                 onChange={(e) => setNameInput(e.target.value)}
                 placeholder="Name (e.g. Sister, Mom)"
-                className="px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500 outline-none"
+                className="px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-900 bg-white placeholder-slate-400 focus:ring-2 focus:ring-brand-500 outline-none"
               />
               <div className="flex gap-2">
                 <input
@@ -175,7 +175,7 @@ export const ManageAccessModal: React.FC<ManageAccessModalProps> = ({
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
                   placeholder="Email (e.g. priya@gmail.com)"
-                  className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500 outline-none"
+                  className="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-900 bg-white placeholder-slate-400 focus:ring-2 focus:ring-brand-500 outline-none"
                 />
                 <button
                   type="submit"

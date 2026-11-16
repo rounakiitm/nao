@@ -196,7 +196,7 @@ export const BulkDiaryImportModal: React.FC<BulkDiaryImportModalProps> = ({
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Paste your 250 days of notes here...&#10;&#10;Example:&#10;12-04-2024&#10;Today was a memorable day at IIT Madras...&#10;---&#10;13-04-2024&#10;Went for an evening walk and reflected on future milestones..."
               rows={8}
-              className="w-full text-xs font-mono p-3.5 rounded-2xl border border-slate-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all leading-relaxed placeholder:text-slate-400"
+              className="w-full text-xs font-mono p-3.5 rounded-2xl border border-slate-300 text-slate-900 bg-white focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all leading-relaxed placeholder:text-slate-400"
             />
           </div>
 

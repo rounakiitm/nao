@@ -438,7 +438,7 @@ export const ControlCenterModal: React.FC<ControlCenterModalProps> = ({
                       type="text"
                       value={profile.name}
                       onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-purple-600 outline-none"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-900 bg-white placeholder-slate-400 focus:ring-2 focus:ring-purple-600 outline-none"
                       placeholder="e.g. Rounak"
                     />
                   </div>
@@ -449,10 +449,10 @@ export const ControlCenterModal: React.FC<ControlCenterModalProps> = ({
                       type="email"
                       value={profile.email}
                       onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-purple-600 outline-none font-mono"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-900 bg-white placeholder-slate-400 focus:ring-2 focus:ring-purple-600 outline-none font-mono"
                       placeholder="rounaksingh05555@gmail.com"
                     />
-                    <p className="text-[11px] text-slate-400 mt-1">
+                    <p className="text-[11px] text-slate-500 mt-1">
                       This Google email is authorized as the Master Vault Owner.
                     </p>
                   </div>
@@ -463,7 +463,7 @@ export const ControlCenterModal: React.FC<ControlCenterModalProps> = ({
                       value={profile.bio}
                       onChange={(e) => setProfile((p) => ({ ...p, bio: e.target.value }))}
                       rows={3}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-purple-600 outline-none"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium text-slate-900 bg-white placeholder-slate-400 focus:ring-2 focus:ring-purple-600 outline-none"
                       placeholder="A personal note or life philosophy..."
                     />
                   </div>
@@ -638,7 +638,7 @@ export const ControlCenterModal: React.FC<ControlCenterModalProps> = ({
                         onChange={(e) => setDevicePinVal(e.target.value)}
                         placeholder="e.g. 1234 (leave blank to disable)"
                         maxLength={8}
-                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-mono"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-mono text-slate-900 bg-white placeholder-slate-400"
                       />
                       <button
                         type="button"
@@ -679,7 +679,7 @@ export const ControlCenterModal: React.FC<ControlCenterModalProps> = ({
                         value={masterPasscodeVal}
                         onChange={(e) => setMasterPasscodeVal(e.target.value)}
                         placeholder="Owner master password"
-                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-mono"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-mono text-slate-900 bg-white placeholder-slate-400"
                       />
                       <button
                         type="button"
